@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ipz-marketplace", "ipz-marketplace\ipz-marketplace.csproj", "{2D5E2CF2-4390-4D20-A2EB-4AF00FAB9239}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D5E2CF2-4390-4D20-A2EB-4AF00FAB9239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D5E2CF2-4390-4D20-A2EB-4AF00FAB9239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D5E2CF2-4390-4D20-A2EB-4AF00FAB9239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D5E2CF2-4390-4D20-A2EB-4AF00FAB9239}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
