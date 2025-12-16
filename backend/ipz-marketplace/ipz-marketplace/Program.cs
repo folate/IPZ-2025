@@ -1,3 +1,6 @@
+using ipz_marketplace.Entities;
+using Microsoft.EntityFrameworkCore;
+
 namespace ipz_marketplace;
 
 public class Program
@@ -11,6 +14,9 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+
+        builder.Services.AddDbContext<MarketplaceDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddIdentityCore<User>().AddEntityFrameworkStores<MarketplaceDbContext>();
 
         var app = builder.Build();
 
