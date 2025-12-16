@@ -20,7 +20,7 @@ public class UserController(UserManager<User> userManager) : ControllerBase
         return Ok(user.DateOfBirth);
     }
     
-    [HttpGet("getUserCurrentTimez")]
+    [HttpGet("getUserCurrentTime")]
     public IActionResult GetUserCurrentTime()
     {
         var timezone = HttpContext.Request.Headers["X-Timezone"].FirstOrDefault();
