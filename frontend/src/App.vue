@@ -1,6 +1,15 @@
 <script setup>
+  import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
+import LoginModal from './components/LoginModal.vue'
+import RegisterModal from './components/RegisterModal.vue'
+const showLogin = ref(false)
+const showRegister = ref(false)
+const handleSwitch = () => {
+  showLogin.value = false;
+  showRegister.value = true;
+}
 </script>
 
 <template>
@@ -13,11 +22,15 @@ import HelloWorld from './components/HelloWorld.vue'
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <button id="logIn-link" @click="showLogin = true">Open Login</button>
       </nav>
     </div>
   </header>
 
   <RouterView />
+  <LoginModal :isOpen="showLogin" @close="showLogin = false" @switchToRegister="handleSwitch"/>
+
+  <RegisterModal :isOpen="showRegister" @close="showRegister = false"/>
 </template>
 
 <style scoped>
@@ -38,11 +51,11 @@ nav {
   margin-top: 2rem;
 }
 
-nav a.router-link-exact-active {
+nav a.router-link-exact-active{
   color: var(--color-text);
 }
 
-nav a.router-link-exact-active:hover {
+nav a.router-link-exact-active:hover{
   background-color: transparent;
 }
 
@@ -81,5 +94,13 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+}
+button#logIn-link{
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  padding: 0 1rem;
+  color: hsla(160, 100%, 37%, 1);
 }
 </style>
