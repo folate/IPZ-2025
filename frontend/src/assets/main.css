@@ -1,7 +1,7 @@
 @import './base.css';
 
-/* Aplikacja ma zajmować całą szerokość */
-#app {
+#app 
+{
   width: 100%;
   max-width: none;
   margin: 0;
@@ -9,14 +9,14 @@
   font-weight: normal;
 }
 
-/* Linki — możesz zostawić, ale usuwam zielony vibe Vite */
-a {
+a 
+{
   text-decoration: none;
   color: inherit;
 }
 
-/* WAŻNE: usuń centrowanie body i layout grid z template */
-body {
+body 
+{
   margin: 0;
   display: block;
   place-items: initial;
@@ -24,9 +24,10 @@ body {
   color: #111;
 }
 
-/* Jeśli chcesz, hover może zostać (opcjonalne) */
-@media (hover: hover) {
-  a:hover {
+@media (hover: hover) 
+{
+  a:hover 
+  {
     opacity: 0.8;
   }
 }
