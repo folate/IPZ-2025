@@ -1,24 +1,29 @@
 <script setup>
-import LandingHeader from "./components/landing/LandingHeader.vue"
-import LandingSearch from "./components/landing/LandingSearch.vue"
-import CategoriesRow from "./components/landing/CategoriesRow.vue"
-import OffersGrid from "./components/landing/OffersGrid.vue"
+import { onMounted } from "vue"
+import { useAuth } from "./stores/auth"
+
+const { initAuth, state } = useAuth()
+
+onMounted(() => {
+  initAuth()
+})
 </script>
 
 <template>
-  <div class="page">
-    <LandingHeader />
-    <LandingSearch />
-    <CategoriesRow />
-    <OffersGrid />
+  <!-- Opcjonalnie: loader przy starcie -->
+  <div v-if="state.loading" class="appLoader">
+    Loading...
   </div>
+    <router-view v-else />
 </template>
 
 <style scoped>
-.page
+.appLoader
 {
-  min-height: 100vh;
-  background: #f0f0f0;
-  color: #111;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 800;
 }
 </style>
