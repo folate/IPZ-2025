@@ -18,9 +18,12 @@ public class Program
         builder.Services.AddOpenApi();
 
         builder.Services.AddDbContext<MarketplaceDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddDataProtection();
         builder.Services.AddIdentityCore<User>()
             .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<MarketplaceDbContext>();
+            .AddEntityFrameworkStores<MarketplaceDbContext>()
+            .AddSignInManager<SignInManager<User>>()
+            .AddDefaultTokenProviders();
 
         var app = builder.Build();
 
@@ -51,8 +54,9 @@ public class Program
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
+        app.UseAuthentication();
 
+        app.UseAuthorization();
 
         app.MapControllers();
 

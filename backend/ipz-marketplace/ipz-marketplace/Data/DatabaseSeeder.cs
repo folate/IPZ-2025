@@ -27,6 +27,11 @@ public class DatabaseSeeder
             await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
+        if (!await roleManager.RoleExistsAsync("User"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("User"));
+        }
+
         // Utwórz użytkownika admin
         var adminUser = new User
         {
@@ -35,7 +40,7 @@ public class DatabaseSeeder
             EmailConfirmed = true,
             FirstName = "Admin",
             LastName = "Administrator",
-            DateOfBirth = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            CreateDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         };
 
         var result = await userManager.CreateAsync(adminUser, "Admin123!");
