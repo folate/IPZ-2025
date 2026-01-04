@@ -1,5 +1,14 @@
 <script setup>
+import { useRouter } from "vue-router"
 import Container from "../ui/Container.vue"
+
+const router = useRouter()
+
+function onOfferClick(offer) 
+{
+  //na razie każda oferta -> buyer profile
+  router.push("/buyer/profile")
+}
 
 const offers = [
   { id: 1, variant: "A", stars: 3 },
@@ -115,35 +124,12 @@ const offers = [
   color: rgba(0,0,0,.45);
 }
 
-
 /* Różne warianty */
-.v-A .title
-{
-  bottom: 44px;
-}
+.v-A .title { bottom: 44px; }
+.v-B .title { bottom: 54px; }
+.v-C .title { bottom: 64px; }
 
-.v-B .title
-{
-  bottom: 54px;
-}
-
-.v-C .title
-{
-  bottom: 64px;
-}
-
-@media (max-width: 1200px)
-{
-  .grid{ grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (max-width: 850px)
-{
-  .grid{ grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 450px)
-{
-  .grid{ grid-template-columns: 1fr; }
-}
+@media (max-width: 1200px) { .grid{ grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 850px) { .grid{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 450px) { .grid{ grid-template-columns: 1fr; } }
 </style>

@@ -1,18 +1,23 @@
 <script setup>
 import { computed } from "vue"
+import { useRouter } from "vue-router"
 import { useAuth } from "../../stores/auth"
 import { ROLES } from "../../auth/roles"
 
+const router = useRouter()
 const { isLoggedIn, setMockRole, logout } = useAuth()
 
-const iconItems = computed(() => {
+const iconItems = computed(() => 
+{
   //Niezalogowany
-  if (!isLoggedIn.value) 
-  {
+  if (!isLoggedIn.value) {
     return [
       { key: "cart", src: "/icons/cart.png", onClick: () => {} },
-      // DEV: klik login = ustaw rolę USER (żebyś mógł testować bez backendu)
-      { key: "login", src: "/icons/login.png", onClick: () => setMockRole(ROLES.USER) },
+      {
+        key: "login",
+        src: "/icons/login.png",
+        onClick: () => setMockRole(ROLES.USER), // DEV login
+      },
     ]
   }
 
@@ -21,8 +26,18 @@ const iconItems = computed(() => {
     { key: "upload", src: "/icons/upload.png", onClick: () => {} },
     { key: "favourites", src: "/icons/favourites.png", onClick: () => {} },
     { key: "notfulfilled", src: "/icons/notfulfilled.png", onClick: () => {} },
-    { key: "user", src: "/icons/user.png", onClick: () => {} },
-    { key: "logout", src: "/icons/logout.png", onClick: () => logout() },
+
+    {
+      key: "user",
+      src: "/icons/user.png",
+      onClick: () => router.push("/seller/profile"),
+    },
+
+    {
+      key: "logout",
+      src: "/icons/logout.png",
+      onClick: () => logout(),
+    },
     { key: "cart", src: "/icons/cart.png", onClick: () => {} },
   ]
 })
@@ -32,15 +47,15 @@ const iconItems = computed(() => {
   <header class="landingHeader">
     <div class="logo">LOGO</div>
 
-    <div class="header-icons">
+    <div class="headerIcons">
       <button
         v-for="item in iconItems"
         :key="item.key"
-        class="icon-box"
+        class="iconBox"
         type="button"
         @click="item.onClick"
       >
-        <img :src="item.src" :alt="item.key" />
+        <img :src="item.src" :alt="item.key" class="iconImg" />
       </button>
     </div>
   </header>
@@ -52,6 +67,7 @@ const iconItems = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   padding: 14px 24px;
   background: #f2f2f2;
   border-bottom: 1px solid #cfcfcf;
@@ -63,36 +79,37 @@ const iconItems = computed(() => {
   font-size: 20px;
 }
 
-.header-icons 
+.headerIcons 
 {
   display: flex;
   gap: 10px;
 }
 
-.icon-box 
+.iconBox 
 {
-  width: 38px;
-  height: 38px;
-  background: #f2f2f2;
-  border-radius: 10px;
-  border: 1px solid #cfcfcf;
+  width: 46px;
+  height: 46px;
 
   display: grid;
   place-items: center;
+
+  background: #f2f2f2;
+  border: 1px solid #cfcfcf;
+  border-radius: 12px;
 
   cursor: pointer;
   padding: 0;
 }
 
-.icon-box:hover 
+.iconBox:hover 
 {
   background: #e6e6e6;
 }
 
-.icon-box img 
+.iconImg 
 {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 </style>

@@ -1,29 +1,23 @@
 <script setup>
 import { onMounted } from "vue"
 import { useAuth } from "./stores/auth"
+import { ROLES } from "./auth/roles"
 
-const { initAuth, state } = useAuth()
+const { initAuth, setMockRole, state, role } = useAuth()
 
-onMounted(() => {
-  initAuth()
+onMounted(async () => {
+  // ⛔ tymczasowo NIE wołamy backendu
+  // await initAuth()
+
+  // ✅ TEST RÓL – zmieniaj i sprawdzaj widoki
+  setMockRole(ROLES.BUYER)
+  // setMockRole(ROLES.SELLER)
+  // setMockRole(ROLES.GUEST)
+
+  console.log("AKTUALNA ROLA:", role.value)
 })
 </script>
 
 <template>
-  <!-- Opcjonalnie: loader przy starcie -->
-  <div v-if="state.loading" class="appLoader">
-    Loading...
-  </div>
-    <router-view v-else />
+  <router-view />
 </template>
-
-<style scoped>
-.appLoader
-{
-  height: 100vh;
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  font-weight: 800;
-}
-</style>

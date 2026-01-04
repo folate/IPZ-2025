@@ -1,15 +1,21 @@
 <script setup>
-defineProps({
+const props = defineProps({
   title: { type: String, default: "TYTUŁ" },
   user: { type: String, default: "USER" },
   price: { type: String, default: "CENA" },
   stars: { type: Number, default: 3 }, // 0..5
   showPriceTop: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(["click"])
 </script>
 
 <template>
-  <article class="card">
+  <article class="card" role="button" tabindex="0"
+    @click="emit('click')"
+    @keydown.enter.prevent="emit('click')"
+    @keydown.space.prevent="emit('click')"
+  >
     <div class="media">
       <div v-if="showPriceTop" class="priceTop">CENA</div>
 
@@ -27,25 +33,27 @@ defineProps({
 </template>
 
 <style scoped>
-
-.card
-{
+.card {
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 10px;
   overflow: hidden;
   background: #e3e3e3;
+  cursor: pointer;
 }
 
-.media
-{
+.card:focus {
+  outline: 2px solid rgba(0,0,0,.35);
+  outline-offset: 3px;
+}
+
+.media{
   position: relative;
   height: 150px;
   background: #cfcfcf;
   border: 3px solid rgba(0,0,0,.18);
 }
 
-.priceTop
-{
+.priceTop{
   position:absolute;
   top: 8px;
   left: 10px;
@@ -53,8 +61,7 @@ defineProps({
   color: rgba(0,0,0,.55);
 }
 
-.stars
-{
+.stars{
   position:absolute;
   top: 8px;
   right: 10px;
@@ -65,8 +72,7 @@ defineProps({
 .stars span{ color: rgba(0,0,0,.18); }
 .stars span.on{ color: rgba(0,0,0,.35); }
 
-.title
-{
+.title{
   position:absolute;
   left: 12px;
   bottom: 34px;
@@ -74,8 +80,7 @@ defineProps({
   color: rgba(0,0,0,.55);
 }
 
-.meta
-{
+.meta{
   position:absolute;
   left: 12px;
   right: 12px;
