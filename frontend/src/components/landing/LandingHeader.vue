@@ -23,7 +23,7 @@ const iconItems = computed(() =>
 
   //Zalogowany
   return [
-    { key: "upload", src: "/icons/upload.png", onClick: () => {} },
+    { key: "upload", src: "/icons/upload.png", onClick: () => router.push("/buyer/ad") },
     { key: "favourites", src: "/icons/favourites.png", onClick: () => {} },
     { key: "notfulfilled", src: "/icons/notfulfilled.png", onClick: () => {} },
 

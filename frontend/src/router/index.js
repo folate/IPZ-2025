@@ -9,35 +9,29 @@ const router = createRouter({
       name: "landing",
       component: LandingView,
     },
-
-    {
-      path: "/profile",
-      name: "profile-redirect",
-      component: () => import("../views/profile/ProfileRedirectView.vue"),
-    },
-
-    {
-      path: "/buyer/profile",
-      name: "buyer-profile",
-      component: () => import("../views/profile/BuyerProfileView.vue"),
-    },
-
-    {
-      path: "/seller/profile",
-      name: "seller-profile",
-      component: () => import("../views/profile/SellerProfileView.vue"),
-    },
-
     {
       path: "/about",
       name: "about",
       component: () => import("../views/AboutView.vue"),
     },
 
+    // Buyer ad form (vueform)
     {
       path: "/buyer/ad",
       name: "buyer-ad-form",
       component: () => import("../views/ad/BuyerAdFormView.vue"),
+    },
+
+    // (jeśli masz seller/buyer profile to zostaw swoje istniejące)
+    {
+      path: "/seller/profile",
+      name: "seller-profile",
+      component: () => import("../views/profile/SellerProfileView.vue"),
+    },
+    {
+      path: "/buyer/profile",
+      name: "buyer-profile",
+      component: () => import("../views/profile/BuyerProfileView.vue"),
     },
   ],
 })

@@ -13,11 +13,10 @@ const form = ref({
   tags: [],
 })
 
-// opcje (mock)
+// opcje
 const serviceTypes = [
   { value: "website", label: "Website design" },
   { value: "logo", label: "Logo design" },
-  { value: "seo", label: "SEO" },
   { value: "copywriting", label: "Copywriting" },
   { value: "video", label: "Video editing" },
 ]
@@ -33,9 +32,7 @@ const aiTags = [
 
 function onSubmit()
 {
-  // TODO: podepniesz endpoint create buyer ad
-  console.log("SUBMIT buyer ad:", JSON.parse(JSON.stringify(form.value)))
-  alert("Saved (mock). Check console.")
+
 }
 </script>
 
