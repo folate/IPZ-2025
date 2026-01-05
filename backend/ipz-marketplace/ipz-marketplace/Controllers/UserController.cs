@@ -1,6 +1,7 @@
 ﻿using ipz_marketplace.DTOs;
 using ipz_marketplace.Entities;
 using ipz_marketplace.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,14 +15,12 @@ public class UserController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly UserService _userService;
     private readonly MarketplaceDbContext _context;
-    private readonly SignInManager<User> _signInManager;
 
-    public UserController(UserManager<User> userManager, MarketplaceDbContext context, SignInManager<User> signInManager)
+    public UserController(MarketplaceDbContext context, UserManager<User> userManager)
     {
         _userManager = userManager;
         _userService = new UserService();
         _context = context;
-        _signInManager = signInManager;
     }
 
     [HttpGet("getBirthdate/{login}")]
@@ -42,6 +41,7 @@ public class UserController : ControllerBase
         return (_userService.GetUserCurrentTime());
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("getUsers")]
     public async Task<ActionResult<IEnumerable<User>>> GetUsers()
     {
