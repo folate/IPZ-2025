@@ -22,14 +22,14 @@ public class DatabaseSeeder
         }
 
         // Utwórz rolę Admin jeśli nie istnieje
-        if (!await roleManager.RoleExistsAsync("Admin"))
+        var Roles = new[] { "Admin", "User", "Freelancer" };
+        
+        foreach (var role in Roles)
         {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-        }
-
-        if (!await roleManager.RoleExistsAsync("User"))
-        {
-            await roleManager.CreateAsync(new IdentityRole("User"));
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
 
         // Utwórz użytkownika admin
