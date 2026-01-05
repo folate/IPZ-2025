@@ -231,7 +231,7 @@ const searchQuery = ref("")
         </section>
 
         <aside class="reviewsStats">
-          <div class="statTitle">num of reviews</div>
+          <div class="statTitle">number of reviews</div>
           <div class="statVal">{{ reviewStats.total }}</div>
 
           <div class="statTitle">average</div>
