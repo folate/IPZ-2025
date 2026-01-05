@@ -28,6 +28,8 @@
 <script setup>
 import {reactive, ref as vueRef} from 'vue';
 import { object, string, boolean} from 'yup';
+
+
 const formData=reactive({
   email: '',
   password: '',
@@ -44,38 +46,32 @@ defineProps(['isOpen']);
 defineEmits(['close','switchToRegister']);
 
 const handleLogin = async () => {
-    try{
-    errors.value = {};
-    await schema.validate(formData, { abortEarly: false });
-    const responce=await fetch('https://baza2137/login',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password
-      }),
-    });
-    const result = await response.json();
-
-    if (response.ok) {
-      console.log("Login successful:", result);
-      emit('close'); 
-    } else {
-      errors.value = { server: result.message || "Login failed" };
+    try {
+        errors.value = {};
+        await schema.validate(formData, { abortEarly: false });
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                login: formData.email,
+                password: formData.password
+            }),
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Server Error:", response.status, errorText);
+            return;
+        }
+        const result = await response.text();
+        console.log("Success:", result);
+    } catch (err) {
+        console.error("Caught Error:", err); 
+        if (err.inner) {
+            err.inner.forEach((error) => {
+                errors.value[error.path] = error.message;
+            });
+        }
     }
-    console.log("Registration Data:", formData);
-    }
-    catch (err) {
-    if (err.inner){
-        err.inner.forEach((error) => {
-      errors.value[error.path] = error.message;
-    });
-}
-    
-    console.log("Logging in...");
-}
 };
 </script>
 

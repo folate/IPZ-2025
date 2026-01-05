@@ -22,9 +22,14 @@ public class DatabaseSeeder
         }
 
         // Utwórz rolę Admin jeśli nie istnieje
-        if (!await roleManager.RoleExistsAsync("Admin"))
+        var Roles = new[] { "Admin", "User", "Freelancer" };
+        
+        foreach (var role in Roles)
         {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
 
         // Utwórz użytkownika admin
@@ -35,7 +40,7 @@ public class DatabaseSeeder
             EmailConfirmed = true,
             FirstName = "Admin",
             LastName = "Administrator",
-            DateOfBirth = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            CreateDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         };
 
         var result = await userManager.CreateAsync(adminUser, "Admin123!");
