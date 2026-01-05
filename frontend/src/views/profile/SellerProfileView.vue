@@ -6,7 +6,6 @@ import Container from "../../components/ui/Container.vue"
 
 const router = useRouter()
 
-// zakładki jak w sketchu
 const tab = ref("offers") // offers | reviews | description
 
 const tabs = [
@@ -15,7 +14,7 @@ const tabs = [
   { key: "description", label: "description" },
 ]
 
-// mocki – później pod backend
+//mocki
 const seller = {
   name: "NAME",
   rating: 3,
