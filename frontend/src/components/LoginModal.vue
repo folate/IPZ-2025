@@ -47,6 +47,24 @@ const handleLogin = async () => {
     try{
     errors.value = {};
     await schema.validate(formData, { abortEarly: false });
+    const responce=await fetch('https://baza2137/login',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password
+      }),
+    });
+    const result = await response.json();
+
+    if (response.ok) {
+      console.log("Login successful:", result);
+      emit('close'); 
+    } else {
+      errors.value = { server: result.message || "Login failed" };
+    }
     console.log("Registration Data:", formData);
     }
     catch (err) {
