@@ -6,10 +6,8 @@ import { ROLES } from "./auth/roles"
 const { initAuth, setMockRole, state, role } = useAuth()
 
 onMounted(async () => {
-  // ⛔ tymczasowo NIE wołamy backendu
   // await initAuth()
 
-  // ✅ TEST RÓL – zmieniaj i sprawdzaj widoki
   setMockRole(ROLES.BUYER)
   // setMockRole(ROLES.SELLER)
   // setMockRole(ROLES.GUEST)

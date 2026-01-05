@@ -1,10 +1,12 @@
-import './assets/main.css'
+import { createApp } from "vue"
+import App from "./App.vue"
+import router from "./router"
 
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import Vueform from "@vueform/vueform"
+import vueformConfig from "./vueform.config"
+import "@vueform/vueform/themes/vueform/css/index.min.css"
 
-const app = createApp(App)
-
-app.use(router)
-app.mount('#app')
+createApp(App)
+  .use(router)
+  .use(Vueform, vueformConfig)
+  .mount("#app")

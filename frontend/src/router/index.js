@@ -33,6 +33,12 @@ const router = createRouter({
       name: "about",
       component: () => import("../views/AboutView.vue"),
     },
+
+    {
+      path: "/buyer/ad",
+      name: "buyer-ad-form",
+      component: () => import("../views/ad/BuyerAdFormView.vue"),
+    },
   ],
 })
 
