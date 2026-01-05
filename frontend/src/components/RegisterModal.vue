@@ -6,7 +6,6 @@
         <h2>Register</h2>
         <form @submit.prevent="handleRegister">
           <div id="fields-flex">
-            <div id="fields-flex">
               <input type="text" v-model="formData.userName" placeholder="User Name"/>
               <span v-if="errors.userName" class="error-text">{{ errors.userName }}</span> <input type="email" v-model="formData.email" placeholder="Email"/>
               <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
@@ -20,7 +19,6 @@
             <div class="checkbox-group">
               <input type="checkbox" id="IsFreelancer" v-model="formData.isFreelancer" />
               <label for="IsFreelancer"> Is freelancer</label>
-            </div>
           </div>
 
           <button type="submit" class="btn-main">Register Now</button>

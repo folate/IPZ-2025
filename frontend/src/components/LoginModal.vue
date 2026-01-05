@@ -6,7 +6,7 @@
         <h2>Create an Account</h2>
         <form @submit.prevent="handleLogin">
             <div id="fields-flex">
-          <input type="email" v-model="formData.email" placeholder="Email" />
+          <input type="email" v-model="formData.email" placeholder="Login" />
           <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
           <hr>
           <input type="password" v-model="formData.password" placeholder="Password"/>
@@ -35,7 +35,7 @@ const formData=reactive({
 })
 const errors=vueRef({})
 const schema=object({
-  email: string().email('Invalid email format').required('Email required'),
+  email: string().required('Email required'),
   password:  string().min(6, 'Password must contain at least 6 characters').required('Password required'),
   doNotLogOut: boolean()
 });
