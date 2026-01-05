@@ -59,7 +59,26 @@ const handleRegister = async () => {
     try{
     errors.value = {};
     await schema.validate(formData, { abortEarly: false });
-    console.log("Registration Data:", formData);
+    // console.log("Registration Data:", formData);
+    const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                Login: formData.userName,
+                Email: formData.email,
+                FirstName: formData.firstName,
+                LastName: formData.lastName,
+                Password: formData.password,
+                isFreelancer: formData.isFreelancer
+            }),
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Server Error:", response.status, errorText);
+            return;
+        }
+        const result = await response.text();
+        console.log("Success:", result);
     }
     catch (err) {
     if (err.inner){
