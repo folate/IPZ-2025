@@ -21,7 +21,12 @@ namespace ipz_marketplace.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO userInfo)
         {
-            return await _authService.Login(userInfo);
+            var loginResponse = await _authService.Login(userInfo.Login, userInfo.Password);
+            if (loginResponse == null)
+            {
+                return Unauthorized("Invalid login or password.");
+            }
+            return Ok(loginResponse);
         }
 
         [HttpPost("register")]
