@@ -29,7 +29,6 @@
 import {reactive, ref as vueRef} from 'vue';
 import { object, string, boolean} from 'yup';
 
-
 const formData=reactive({
   email: '',
   password: '',
@@ -73,6 +72,8 @@ const handleLogin = async () => {
         }
     }
 };
+
+
 </script>
 
 <style scoped>
