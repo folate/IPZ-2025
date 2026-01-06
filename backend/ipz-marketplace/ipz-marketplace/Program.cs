@@ -1,5 +1,6 @@
 using ipz_marketplace.Data;
 using ipz_marketplace.Entities;
+using ipz_marketplace.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddScoped<AuthService>();
 
         // Add services to the container.
 

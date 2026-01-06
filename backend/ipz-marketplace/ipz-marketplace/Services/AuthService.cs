@@ -13,7 +13,7 @@ namespace ipz_marketplace.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly IServiceProvider _serviceProvider;
-        public AuthService(UserManager<User> userManager, IServiceProvider serviceProvider)
+        public AuthService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _userManager = _serviceProvider.GetRequiredService<UserManager<User>>();
