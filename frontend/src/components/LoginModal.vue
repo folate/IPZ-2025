@@ -55,6 +55,7 @@ const handleLogin = async () => {
                 login: formData.email,
                 password: formData.password
             }),
+            credentials: 'include'
         });
         if (!response.ok) {
             const errorText = await response.text();
