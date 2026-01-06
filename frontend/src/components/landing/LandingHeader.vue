@@ -59,6 +59,9 @@ const iconItems = computed(() =>
       </button>
     </div>
   </header>
+  <LoginModal :isOpen="showLogin" @close="showLogin = false" @switchToRegister="handleSwitch"/>
+
+  <RegisterModal :isOpen="showRegister" @close="showRegister = false"/>
 </template>
 
 <style scoped>
