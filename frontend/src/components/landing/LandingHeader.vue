@@ -3,6 +3,15 @@ import { computed } from "vue"
 import { useRouter } from "vue-router"
 import { useAuth } from "../../stores/auth"
 import { ROLES } from "../../auth/roles"
+import LoginModal from '../LoginModal.vue'
+import RegisterModal from '../RegisterModal.vue'
+import { ref as VueRef} from 'vue'
+const showLogin = VueRef(false)
+const showRegister = VueRef(false)
+const handleSwitch = () => {
+  showLogin.value = false;
+  showRegister.value = true;
+}
 
 const router = useRouter()
 const { isLoggedIn, setMockRole, logout } = useAuth()
@@ -57,6 +66,7 @@ const iconItems = computed(() =>
       >
         <img :src="item.src" :alt="item.key" class="iconImg" />
       </button>
+      <button id="logIn-link" @click="showLogin = true">Open Login</button>
     </div>
   </header>
   <LoginModal :isOpen="showLogin" @close="showLogin = false" @switchToRegister="handleSwitch"/>

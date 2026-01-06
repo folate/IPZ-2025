@@ -1,6 +1,7 @@
 using ipz_marketplace.Data;
 using ipz_marketplace.Entities;
 using ipz_marketplace.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,28 +14,38 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddScoped<AuthService>();
 
-        // Add services to the container.
-
         builder.Services.AddControllers();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
 
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        builder.Services.AddOpenApi();
 
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.WithOrigins(allowedOrigins)
+                policy.WithOrigins("https://localhost")
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials();
             });
         });
 
-        builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+        builder.Services.AddDbContext<MarketplaceDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddDataProtection();
+        builder.Services.AddIdentityCore<User>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<MarketplaceDbContext>()
+            .AddSignInManager<SignInManager<User>>()
+            .AddDefaultTokenProviders();
+
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = IdentityConstants.ApplicationScheme;
+            options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+            options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+        })
             .AddCookie(IdentityConstants.ApplicationScheme, options =>
             {
+                options.Cookie.Name = ".AspNetCore.Identity.Application";
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -45,15 +56,6 @@ public class Program
                     return Task.CompletedTask;
                 };
             });
-
-        builder.Services.AddDbContext<MarketplaceDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-        builder.Services.AddDataProtection();
-        builder.Services.AddIdentityCore<User>()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<MarketplaceDbContext>()
-            .AddSignInManager<SignInManager<User>>()
-            .AddDefaultTokenProviders();
-
 
         var app = builder.Build();
 

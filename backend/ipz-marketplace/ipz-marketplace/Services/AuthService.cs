@@ -19,10 +19,12 @@ namespace ipz_marketplace.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly IServiceProvider _serviceProvider;
-        public AuthService(IServiceProvider serviceProvider)
+        private readonly SignInManager<User> _signInManager;
+        public AuthService(IServiceProvider serviceProvider, SignInManager<User> signInManager)
         {
             _serviceProvider = serviceProvider;
             _userManager = _serviceProvider.GetRequiredService<UserManager<User>>();
+            _signInManager = signInManager;
         }
 
         public async Task<IActionResult> Modify(UserModifyDTO userInfo)
@@ -68,7 +70,7 @@ namespace ipz_marketplace.Services
                 else
                     await _userManager.AddToRoleAsync(newUser, "User");
 
-                return new OkObjectResult("Registration Succeeded");
+                await _signInManager.SignInAsync(newUser, isPersistent: true);
             }
             return new BadRequestObjectResult(result.Errors);
         }
@@ -81,12 +83,13 @@ namespace ipz_marketplace.Services
             {
                 return null;
             }
-            var result = await _userManager.CheckPasswordAsync(userLogin, password);
+            var result = await _signInManager.PasswordSignInAsync(userLogin, password, isPersistent: true, lockoutOnFailure: false);
 
-            if (!result)
+            if (!result.Succeeded)
             {
                 return null;
             }
+
             return new LoginResponse
             {
                 Username = userLogin.UserName,
