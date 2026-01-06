@@ -6,7 +6,6 @@ import Container from "../../components/ui/Container.vue"
 
 const form$ = ref(null)
 
-// model formularza
 const form = ref({
   title: "",
   description: "",
@@ -16,7 +15,7 @@ const form = ref({
   tags: [],
 })
 
-// opcje (mock)
+//opcje
 const serviceTypes = [
   { value: "website", label: "Website design" },
   { value: "logo", label: "Logo design" },
@@ -185,16 +184,19 @@ async function onSubmit()
 </template>
 
 <style scoped>
-.page{
+.page
+{
   background: #f0f0f0;
   min-height: 100vh;
 }
 
-.wrap{
+.wrap
+{
   padding: 22px 0 60px;
 }
 
-.topRow{
+.topRow
+{
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -202,14 +204,16 @@ async function onSubmit()
   margin-bottom: 16px;
 }
 
-.title{
+.title
+{
   font-size: 34px;
   font-weight: 900;
   margin: 0;
   color: rgba(0,0,0,.75);
 }
 
-.debug{
+.debug
+{
   margin-top: 18px;
   background: #ffffff;
   border: 2px solid rgba(0,0,0,.12);
