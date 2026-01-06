@@ -1,24 +1,21 @@
 <script setup>
-import LandingHeader from "./components/landing/LandingHeader.vue"
-import LandingSearch from "./components/landing/LandingSearch.vue"
-import CategoriesRow from "./components/landing/CategoriesRow.vue"
-import OffersGrid from "./components/landing/OffersGrid.vue"
+import { onMounted } from "vue"
+import { useAuth } from "./stores/auth"
+import { ROLES } from "./auth/roles"
+
+const { initAuth, setMockRole, state, role } = useAuth()
+
+onMounted(async () => {
+  // await initAuth()
+
+  setMockRole(ROLES.BUYER)
+  // setMockRole(ROLES.SELLER)
+  // setMockRole(ROLES.GUEST)
+
+  console.log("AKTUALNA ROLA:", role.value)
+})
 </script>
 
 <template>
-  <div class="page">
-    <LandingHeader />
-    <LandingSearch />
-    <CategoriesRow />
-    <OffersGrid />
-  </div>
+  <router-view />
 </template>
-
-<style scoped>
-.page
-{
-  min-height: 100vh;
-  background: #f0f0f0;
-  color: #111;
-}
-</style>
