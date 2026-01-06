@@ -9,6 +9,12 @@ using System.Linq;
 
 namespace ipz_marketplace.Services
 {
+    public class LoginResponse
+    {
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public List<string> Roles { get; set; }
+    }
     public class AuthService
     {
         private readonly UserManager<User> _userManager;
@@ -49,7 +55,7 @@ namespace ipz_marketplace.Services
                 EmailConfirmed = true,
                 FirstName = userInfo.FirstName,
                 LastName = userInfo.LastName,
-                CreateDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreateDate = DateTime.UtcNow,
                 IsFreelancer = userInfo.isFreelancer
             };
 
@@ -67,21 +73,26 @@ namespace ipz_marketplace.Services
             return new BadRequestObjectResult(result.Errors);
         }
 
-        public async Task<IActionResult> Login(UserLoginDTO userInfo)
+        public async Task<LoginResponse?> Login(string login, string password)
         {
-            var userLogin = await _userManager.FindByNameAsync(userInfo.Login);
+            var userLogin = await _userManager.FindByNameAsync(login);
 
             if (userLogin == null)
             {
-                return new UnauthorizedObjectResult("Unauthorized");
+                return null;
             }
-            var result = await _userManager.CheckPasswordAsync(userLogin, userInfo.Password);
+            var result = await _userManager.CheckPasswordAsync(userLogin, password);
 
             if (!result)
             {
-                return new UnauthorizedObjectResult("Unauthorized");
+                return null;
             }
-            return new OkObjectResult("Login success: " + userInfo.Login);
+            return new LoginResponse
+            {
+                Username = userLogin.UserName,
+                Email = userLogin.Email,
+                Roles = (List<string>)await _userManager.GetRolesAsync(userLogin)
+            };
         }
     }
 }

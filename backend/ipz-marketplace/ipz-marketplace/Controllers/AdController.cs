@@ -27,13 +27,14 @@ namespace ipz_marketplace.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null)
             {
-                return Unauthorized();
+                return Unauthorized("testing backend and userId here: " + userId);
             }
 
             var ad = new SellerAd
             {
                 Title = adDto.Title,
                 Description = adDto.Description,
+                CreateDate = DateTime.UtcNow,
                 FreelancerId = userId,
                 Gigs = adDto.Gigs.Select(g => new Gigs
                 {
@@ -46,16 +47,26 @@ namespace ipz_marketplace.Controllers
             _context.SellerAds.Add(ad);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok(userId);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserAd([FromRoute] string id)
+        public async Task<IActionResult> GetUserAd([FromRoute] int id)
         {
-            var ad = new SellerAdDTO
-            {
-                
-            };
+            var ad = _context.SellerAds
+                .Select(a => new ListingSellerAdDTO
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Gigs = a.Gigs.Select(g => new GigsDTO
+                    {
+                        TierName = g.TierName,
+                        TierDescription = g.TierDescription,
+                        Price = g.Price
+                    }).ToList()
+                })
+                .FirstOrDefault(a => a.Id == id);
             return Ok(ad);
         }
     }

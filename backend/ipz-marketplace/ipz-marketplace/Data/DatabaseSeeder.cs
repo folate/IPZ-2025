@@ -23,7 +23,7 @@ public class DatabaseSeeder
 
         // Utwórz rolę Admin jeśli nie istnieje
         var Roles = new[] { "Admin", "User", "Freelancer" };
-        
+
         foreach (var role in Roles)
         {
             if (!await roleManager.RoleExistsAsync(role))

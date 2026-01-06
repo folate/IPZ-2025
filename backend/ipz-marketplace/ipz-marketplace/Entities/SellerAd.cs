@@ -4,11 +4,16 @@ namespace ipz_marketplace.Entities;
 
 public class SellerAd
 {
+    [Required]
     public int Id { get; set; }
+    [Required]
     public string Title { get; set; }
+    [Required]
     public string Description { get; set; }
-    public DateTime CreateDate { get; set; } = DateTime.Now;
+    [Required]
+    public DateTime CreateDate { get; set; }
     public string FreelancerId { get; set; }
     public User Freelancer { get; set; }
+    [Required]
     public ICollection<Gigs> Gigs { get; set; } = new List<Gigs>();
 }
