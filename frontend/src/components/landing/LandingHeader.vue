@@ -1,52 +1,46 @@
 <script setup>
-import { computed } from "vue"
+import { computed, ref, watch } from "vue"
 import { useRouter } from "vue-router"
 import { useAuth } from "../../stores/auth"
-import { ROLES } from "../../auth/roles"
-import LoginModal from '../LoginModal.vue'
-import RegisterModal from '../RegisterModal.vue'
-import { ref as VueRef} from 'vue'
-const showLogin = VueRef(false)
-const showRegister = VueRef(false)
-const handleSwitch = () => {
-  showLogin.value = false;
-  showRegister.value = true;
-}
+import LoginModal from "../LoginModal.vue"
+import RegisterModal from "../RegisterModal.vue"
 
 const router = useRouter()
-const { isLoggedIn, setMockRole, logout } = useAuth()
+const { isLoggedIn, logout } = useAuth()
 
-const iconItems = computed(() => 
-{
-  //Niezalogowany
+const showLogin = ref(false)
+const showRegister = ref(false)
+
+const handleSwitch = () => {
+  showLogin.value = false
+  showRegister.value = true
+}
+
+watch(isLoggedIn, (v) => {
+  if (v) {
+    showLogin.value = false
+    showRegister.value = false
+  }
+})
+
+const iconItems = computed(() => {
   if (!isLoggedIn.value) {
     return [
       { key: "cart", src: "/icons/cart.png", onClick: () => {} },
       {
         key: "login",
         src: "/icons/login.png",
-        onClick: () => setMockRole(ROLES.USER), // DEV login
+        onClick: () => (showLogin.value = true),
       },
     ]
   }
 
-  //Zalogowany
   return [
     { key: "upload", src: "/icons/upload.png", onClick: () => router.push("/buyer/ad") },
     { key: "favourites", src: "/icons/favourites.png", onClick: () => {} },
     { key: "notfulfilled", src: "/icons/notfulfilled.png", onClick: () => {} },
-
-    {
-      key: "user",
-      src: "/icons/user.png",
-      onClick: () => router.push("/seller/profile"),
-    },
-
-    {
-      key: "logout",
-      src: "/icons/logout.png",
-      onClick: () => logout(),
-    },
+    { key: "user", src: "/icons/user.png", onClick: () => router.push("/seller/profile") },
+    { key: "logout", src: "/icons/logout.png", onClick: () => logout() },
     { key: "cart", src: "/icons/cart.png", onClick: () => {} },
   ]
 })
@@ -66,16 +60,23 @@ const iconItems = computed(() =>
       >
         <img :src="item.src" :alt="item.key" class="iconImg" />
       </button>
-      <button id="logIn-link" @click="showLogin = true">Open Login</button>
     </div>
   </header>
-  <LoginModal :isOpen="showLogin" @close="showLogin = false" @switchToRegister="handleSwitch"/>
 
-  <RegisterModal :isOpen="showRegister" @close="showRegister = false"/>
+  <LoginModal
+    :isOpen="showLogin"
+    @close="showLogin = false"
+    @switchToRegister="handleSwitch"
+  />
+
+  <RegisterModal
+    :isOpen="showRegister"
+    @close="showRegister = false"
+  />
 </template>
 
 <style scoped>
-.landingHeader 
+.landingHeader
 {
   display: flex;
   justify-content: space-between;
@@ -86,19 +87,19 @@ const iconItems = computed(() =>
   border-bottom: 1px solid #cfcfcf;
 }
 
-.logo 
+.logo
 {
   font-weight: 800;
   font-size: 20px;
 }
 
-.headerIcons 
+.headerIcons
 {
   display: flex;
   gap: 10px;
 }
 
-.iconBox 
+.iconBox
 {
   width: 46px;
   height: 46px;
@@ -114,12 +115,12 @@ const iconItems = computed(() =>
   padding: 0;
 }
 
-.iconBox:hover 
+.iconBox:hover
 {
   background: #e6e6e6;
 }
 
-.iconImg 
+.iconImg
 {
   width: 28px;
   height: 28px;
