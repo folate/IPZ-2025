@@ -39,13 +39,7 @@ const specialChars = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
 const errors=vueRef({})
 const schema=object({
   email: string().required('Login required'),
-  password: string()
-    .min(8, 'Password must contain at least 8 characters')
-    .required('Password required')
-    .test('special-char', 'Need one special character', (value) => {
-      return value ? [...value].some(char => specialChars.includes(char)) : false;
-    })
-    .matches(/(?=.*[0-9])/, 'Password must contain at least one number'),
+  password: string().required('Password required'),
   doNotLogOut: boolean()
 });
 

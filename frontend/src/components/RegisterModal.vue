@@ -33,11 +33,10 @@
 <script setup>
 import {reactive, ref as vueRef} from 'vue';
 import { object, string, boolean, ref as yupRef} from 'yup';
-const serverNotification = vueRef('');
-
+const specialChars = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
 defineProps(['isOpen']);
 const emit = defineEmits(['close', 'switchToLogin']);
-
+const serverNotification = vueRef('');
 const errors=vueRef({})
 const formData=reactive({
   userName: '',
@@ -65,6 +64,7 @@ const schema=object({
 });
 const handleRegister = async () => {
     try{
+    serverNotification.value = '';
     errors.value = {};
     await schema.validate(formData, { abortEarly: false });
     const response = await fetch('/api/auth/register', {
@@ -79,6 +79,8 @@ const handleRegister = async () => {
                 isFreelancer: formData.isFreelancer
             }),
         });
+        const result = await response.text();
+        console.log(response);
         if (!response.ok) {
             if (response.status === 401 || response.status === 409) {
                 serverNotification.value = "Username or Email is already taken.";
@@ -88,7 +90,6 @@ const handleRegister = async () => {
             }
           return;
         }
-        const result = await response.text();
         if(response.ok){
         console.log("Success:", result);
         emit('switchToLogin');
