@@ -8,11 +8,14 @@ import RegisterModal from '../RegisterModal.vue'
 import { ref as VueRef} from 'vue'
 const showLogin = VueRef(false)
 const showRegister = VueRef(false)
-const handleSwitch = () => {
+const handleSwitchToRegister = () => {
   showLogin.value = false;
   showRegister.value = true;
 }
-
+const handleRegisterSuccess = () => {
+  showRegister.value = false;
+  showLogin.value = true;
+}
 const router = useRouter()
 const { isLoggedIn, setMockRole, logout } = useAuth()
 
@@ -69,60 +72,18 @@ const iconItems = computed(() =>
       <button id="logIn-link" @click="showLogin = true">Open Login</button>
     </div>
   </header>
-  <LoginModal :isOpen="showLogin" @close="showLogin = false" @switchToRegister="handleSwitch"/>
+  <!-- <LoginModal :isOpen="showLogin" @close="showLogin = false" @switchToRegister="handleSwitch"/>
 
-  <RegisterModal :isOpen="showRegister" @close="showRegister = false"/>
+  <RegisterModal :isOpen="showRegister" @close="showRegister = false"/> -->
+  <LoginModal 
+  :isOpen="showLogin" 
+  @close="showLogin = false" 
+  @switchToRegister="handleSwitchToRegister"
+/>
+
+<RegisterModal 
+  :isOpen="showRegister" 
+  @close="showRegister = false" 
+  @switchToLogin="handleRegisterSuccess"
+/>
 </template>
-
-<style scoped>
-.landingHeader 
-{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 14px 24px;
-  background: #f2f2f2;
-  border-bottom: 1px solid #cfcfcf;
-}
-
-.logo 
-{
-  font-weight: 800;
-  font-size: 20px;
-}
-
-.headerIcons 
-{
-  display: flex;
-  gap: 10px;
-}
-
-.iconBox 
-{
-  width: 46px;
-  height: 46px;
-
-  display: grid;
-  place-items: center;
-
-  background: #f2f2f2;
-  border: 1px solid #cfcfcf;
-  border-radius: 12px;
-
-  cursor: pointer;
-  padding: 0;
-}
-
-.iconBox:hover 
-{
-  background: #e6e6e6;
-}
-
-.iconImg 
-{
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-</style>
