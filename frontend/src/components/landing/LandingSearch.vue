@@ -17,38 +17,3 @@ import Container from "../ui/Container.vue"
     </Container>
   </section>
 </template>
-
-<style scoped>
-.wrap{ padding: 28px 0 14px; }
-
-.search
-{
-  position: relative;
-  height: 52px;
-  border-radius: 18px;
-  border: 2px solid rgba(0,0,0,.18);
-  background: #f8f8f8;
-  display:flex;
-  align-items:center;
-  padding: 0 14px;
-  max-width: 1200px;
-}
-
-.search input
-{
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 14px;
-  padding-right: 34px;
-  max-width: 700px; 
-}
-
-.icon
-{
-  position:absolute;
-  right: 14px;
-  color: rgba(0,0,0,.55);
-}
-</style>

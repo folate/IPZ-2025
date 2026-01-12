@@ -25,6 +25,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./backend/keys:/root/.aspnet/DataProtection-Keys
 
   frontend:
     build:

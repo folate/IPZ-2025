@@ -48,4 +48,17 @@ public class UserController : ControllerBase
         return await _context.Users.ToListAsync();
     }
 
+    [Authorize]
+    [HttpGet("getUser")]
+    public async Task<IActionResult> GetUser()
+    {
+        var login = await _userManager.GetUserAsync(User);
+        if(login == null)
+        {
+            return NotFound("User not found! Double check if you are logged in!!");
+        }
+        var role = await _userManager.GetRolesAsync(login);
+        return Ok(new { Login = login.UserName, Role = role });
+    }
+
 }

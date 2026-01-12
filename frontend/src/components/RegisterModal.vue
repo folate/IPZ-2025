@@ -6,6 +6,7 @@
         <h2>Register</h2>
         <form @submit.prevent="handleRegister">
           <div id="fields-flex">
+            <span v-if="serverNotification" class="error-text server-error">{{ serverNotification }}</span>
               <input type="text" v-model="formData.userName" placeholder="User Name"/>
               <span v-if="errors.userName" class="error-text">{{ errors.userName }}</span> <input type="email" v-model="formData.email" placeholder="Email"/>
               <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
@@ -21,7 +22,7 @@
               <label for="IsFreelancer"> Is freelancer</label>
           </div>
 
-          <button type="submit" class="btn-main">Register Now</button>
+          <button type="submit" class="btn-main" id="ButtonModal">Register Now</button>
           
         </form>
       </div>
@@ -32,10 +33,10 @@
 <script setup>
 import {reactive, ref as vueRef} from 'vue';
 import { object, string, boolean, ref as yupRef} from 'yup';
-
+const specialChars = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
 defineProps(['isOpen']);
-const emit=defineEmits(['close']);
-
+const emit = defineEmits(['close', 'switchToLogin']);
+const serverNotification = vueRef('');
 const errors=vueRef({})
 const formData=reactive({
   userName: '',
@@ -51,20 +52,26 @@ const schema=object({
   email: string().email('Invalid email format').required('Email required'),
   firstName:string().required('First name required'),
   lastName:string().required('Last name required'),
-  password:  string().min(6, 'Password must contain at least 6 characters').required('Password required'),
+   password: string()
+    .min(8, 'Password must contain at least 8 characters')
+    .required('Password required')
+    .test('special-char', 'Need one special character', (value) => {
+      return value ? [...value].some(char => specialChars.includes(char)) : false;
+    })
+    .matches(/(?=.*[0-9])/, 'Password must contain at least one number'),
   confirmPassword: string().oneOf([yupRef('password')], 'Passwords must match').required('Please confirm your password'),
   isFreelancer: boolean()
 });
 const handleRegister = async () => {
     try{
+    serverNotification.value = '';
     errors.value = {};
     await schema.validate(formData, { abortEarly: false });
-    // console.log("Registration Data:", formData);
     const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                Login: formData.userName,
+                login: formData.userName,
                 Email: formData.email,
                 FirstName: formData.firstName,
                 LastName: formData.lastName,
@@ -72,13 +79,21 @@ const handleRegister = async () => {
                 isFreelancer: formData.isFreelancer
             }),
         });
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Server Error:", response.status, errorText);
-            return;
-        }
         const result = await response.text();
+        console.log(response);
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 409) {
+                serverNotification.value = "Username or Email is already taken.";
+            }
+            else {
+              serverNotification.value = "An error occurred. Please try again.";
+            }
+          return;
+        }
+        if(response.ok){
         console.log("Success:", result);
+        emit('close');
+        }
     }
     catch (err) {
     if (err.inner){
@@ -86,74 +101,6 @@ const handleRegister = async () => {
       errors.value[error.path] = error.message;
     });
 }
-    
-    console.log("Logging in...");
 }
 };
 </script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-.modal-content {
-    text-align: center;
-    box-shadow: 10px 10px 10px 10px rgba(0, 0, 0, 0.792);
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  color: black;
-  width: 20%;
-  height: auto;
-}
-div#fields-flex{
-    display: flex;
-    flex-direction: column;
-    margin:5%;
-    justify-content: space-between;
-    width:90%;
-    border-radius: 5px;
-    border-style: solid;
-    border-width: 2px;
-    border-color: rgb(186, 187, 188);
-    padding:10px;
-}
-div#fields-flex input, button{
-    border: none;
-    background-color: rgb(216, 216, 216);
-    padding: 10px;
-    margin: 10px;
-    border-radius: 5px;
-}
-button#cancelButton{
-    text-align: right;
-    display: flex;
-}
-button:hover{
-    cursor: pointer;
-}
-div#buttons{
-    text-align: center;
-    width: 80%;
-    display: flex;
-    flex-direction: column;
-    margin:5% auto;
-}
-
-.error-text {
-  color: #d93025;
-  font-size: 0.75rem;
-  margin-top: -5px;
-  margin-bottom: 5px;
-  text-align: left;
-  padding-left: 10px;
-}
-</style>
