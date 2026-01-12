@@ -9,5 +9,6 @@ namespace ipz_marketplace.DTOs
 
         [Required]
         public string Password { get; set; }
+        public bool doNotLogout { get; set; }
     }
 }
