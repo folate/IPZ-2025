@@ -35,7 +35,6 @@ const formData=reactive({
   password: '',
   doNotLogOut: false
 })
-const specialChars = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
 const errors=vueRef({})
 const schema=object({
   email: string().required('Login required'),
@@ -44,7 +43,7 @@ const schema=object({
 });
 
 defineProps(['isOpen']);
-defineEmits(['close','switchToRegister']);
+const emit=defineEmits(['close','switchToRegister']);
 
 const handleLogin = async () => {
     try {
@@ -55,7 +54,8 @@ const handleLogin = async () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 login: formData.email,
-                password: formData.password
+                password: formData.password,
+                doNotLogOut: formData.doNotLogOut
             }),
             credentials: 'include'
         });

@@ -71,7 +71,7 @@ const handleRegister = async () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                Login: formData.userName,
+                login: formData.userName,
                 Email: formData.email,
                 FirstName: formData.firstName,
                 LastName: formData.lastName,
@@ -92,7 +92,7 @@ const handleRegister = async () => {
         }
         if(response.ok){
         console.log("Success:", result);
-        emit('switchToLogin');
+        emit('close');
         }
     }
     catch (err) {
