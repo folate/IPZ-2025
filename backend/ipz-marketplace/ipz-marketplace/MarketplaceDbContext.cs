@@ -20,6 +20,7 @@ public class MarketplaceDbContext : IdentityDbContext<User>
         {
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
+            entity.Property(e => e.Email).HasMaxLength(256);
         });
 
         builder.Entity<SellerAd>()

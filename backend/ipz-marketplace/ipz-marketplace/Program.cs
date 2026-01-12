@@ -1,7 +1,7 @@
 using ipz_marketplace.Data;
 using ipz_marketplace.Entities;
 using ipz_marketplace.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +12,18 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        var keysDirectory = new DirectoryInfo("/root/.aspnet/DataProtection-Keys");
+
+        if (!keysDirectory.Exists)
+        {
+            keysDirectory.Create();
+        }
+        
+        builder.Services.AddDataProtection()
+            .PersistKeysToFileSystem(keysDirectory)
+            .SetApplicationName("ipz-marketplace");
+
         builder.Services.AddScoped<AuthService>();
 
         builder.Services.AddControllers();
@@ -67,7 +79,7 @@ public class Program
             {
                 var context = services.GetRequiredService<MarketplaceDbContext>();
         
-                await context.Database.MigrateAsync();
+                context.Database.Migrate();
 
                 await DatabaseSeeder.SeedAsync(services, app.Environment);
             }

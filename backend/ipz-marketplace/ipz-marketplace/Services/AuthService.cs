@@ -1,9 +1,7 @@
 ﻿using ipz_marketplace.DTOs;
 using ipz_marketplace.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 
@@ -71,31 +69,31 @@ namespace ipz_marketplace.Services
                     await _userManager.AddToRoleAsync(newUser, "User");
 
                 await _signInManager.SignInAsync(newUser, isPersistent: true);
+                return new OkObjectResult("User sucessfuly registered!");
             }
             return new BadRequestObjectResult(result.Errors);
         }
 
-        public async Task<LoginResponse?> Login(string login, string password)
+        public async Task<LoginResponse?> Login(string login, string password, bool doNotLogout)
         {
             var userLogin = await _userManager.FindByNameAsync(login);
-
             if (userLogin == null)
             {
                 return null;
             }
-            var result = await _signInManager.PasswordSignInAsync(userLogin, password, isPersistent: true, lockoutOnFailure: false);
-
+            
+            var result = await _signInManager.PasswordSignInAsync(userLogin, password, isPersistent: doNotLogout, lockoutOnFailure: false);
             if (!result.Succeeded)
             {
                 return null;
             }
 
             return new LoginResponse
-            {
-                Username = userLogin.UserName,
-                Email = userLogin.Email,
-                Roles = (List<string>)await _userManager.GetRolesAsync(userLogin)
-            };
+                {
+                    Username = userLogin.UserName,
+                    Email = userLogin.Email,
+                    Roles = (List<string>)await _userManager.GetRolesAsync(userLogin)
+                };
         }
     }
 }
