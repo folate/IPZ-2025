@@ -18,11 +18,13 @@ namespace ipz_marketplace.Services
         private readonly UserManager<User> _userManager;
         private readonly IServiceProvider _serviceProvider;
         private readonly SignInManager<User> _signInManager;
-        public AuthService(IServiceProvider serviceProvider, SignInManager<User> signInManager)
+        private readonly MarketplaceDbContext _context;
+        public AuthService(IServiceProvider serviceProvider, SignInManager<User> signInManager, MarketplaceDbContext context)
         {
             _serviceProvider = serviceProvider;
             _userManager = _serviceProvider.GetRequiredService<UserManager<User>>();
             _signInManager = signInManager;
+            _context = context;
         }
 
         public async Task<IActionResult> Modify(UserModifyDTO userInfo)
@@ -67,6 +69,17 @@ namespace ipz_marketplace.Services
                     await _userManager.AddToRoleAsync(newUser, "Freelancer");
                 else
                     await _userManager.AddToRoleAsync(newUser, "User");
+
+                // Create buyer profile for every new user
+                var buyer = new Buyer
+                {
+                    UserId = newUser.Id,
+                    JoinedDate = DateTime.UtcNow,
+                    LastOrderDate = null,
+                    TotalOrders = 0
+                };
+                _context.Buyers.Add(buyer);
+                await _context.SaveChangesAsync();
 
                 await _signInManager.SignInAsync(newUser, isPersistent: true);
                 return new OkObjectResult("User sucessfuly registered!");
