@@ -10,4 +10,7 @@ public class User : IdentityUser
     public DateTime CreateDate { get; set; }
     public string Email { get; set; }
     public bool IsFreelancer { get; set; }
+
+    public Buyer Buyer { get; set; }
+    public Seller Seller { get; set; }
 }
