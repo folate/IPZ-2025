@@ -14,6 +14,7 @@ public class DatabaseSeeder
 
         var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var context = serviceProvider.GetRequiredService<MarketplaceDbContext>();
 
         // Sprawdź czy baza jest pusta
         if (userManager.Users.Any())
@@ -49,5 +50,19 @@ public class DatabaseSeeder
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
+
+        var adminBuyer = new Buyer
+        {
+            UserId = adminUser.Id,
+            ShippingAddress = "123 Admin Street",
+            BillingAddress = "123 Admin Street",
+            TotalOrders = 0,
+            JoinedDate = DateTime.UtcNow,
+            LastOrderDate = null,
+            PreferredPaymentMethod = "Credit Card"
+        };
+
+        context.Buyers.Add(adminBuyer);
+        await context.SaveChangesAsync();
     }
 }
