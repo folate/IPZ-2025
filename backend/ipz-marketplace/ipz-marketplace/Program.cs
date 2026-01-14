@@ -14,6 +14,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         var keysDirectory = new DirectoryInfo("/root/.aspnet/DataProtection-Keys");
+        // var keysDirectory = new DirectoryInfo("../../keys/DataProtection-Keys");
 
         if (!keysDirectory.Exists)
         {
@@ -27,6 +28,9 @@ public class Program
         builder.Services.AddScoped<AuthService>();
 
         builder.Services.AddControllers();
+        
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
         builder.Services.AddOpenApi();
 
@@ -78,6 +82,8 @@ public class Program
             try 
             {
                 var context = services.GetRequiredService<MarketplaceDbContext>();
+                
+                context.Database.EnsureDeleted();
         
                 context.Database.Migrate();
 
@@ -94,6 +100,15 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.UseSwagger(options =>
+            {
+                options.RouteTemplate = "api/swagger/{documentName}/swagger.json";
+            });
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/api/swagger/v1/swagger.json", "My API v1");
+                options.RoutePrefix = "api/swagger";
+            });
         }
 
         app.UseCors();
