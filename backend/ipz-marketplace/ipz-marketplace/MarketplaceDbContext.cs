@@ -11,6 +11,7 @@ public class MarketplaceDbContext : IdentityDbContext<User>
     
     public DbSet<SellerAd> SellerAds { get; set; }
     public DbSet<Gigs> Gigs { get; set; }
+    public DbSet<Buyer> Buyers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -38,5 +39,10 @@ public class MarketplaceDbContext : IdentityDbContext<User>
             entity.Property(g => g.Price)
                   .HasColumnType("numeric(18,2)");
         });
+
+        builder.Entity<Buyer>()
+            .HasOne(b => b.User)
+            .WithOne()
+            .HasForeignKey<Buyer>(b => b.UserId);
     }
 }

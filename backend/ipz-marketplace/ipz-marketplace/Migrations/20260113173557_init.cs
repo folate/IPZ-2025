@@ -162,6 +162,31 @@ namespace ipz_marketplace.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Buyers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ShippingAddress = table.Column<string>(type: "text", nullable: false),
+                    BillingAddress = table.Column<string>(type: "text", nullable: false),
+                    TotalOrders = table.Column<int>(type: "integer", nullable: false),
+                    JoinedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastOrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    PreferredPaymentMethod = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Buyers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Buyers_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SellerAds",
                 columns: table => new
                 {
@@ -243,6 +268,12 @@ namespace ipz_marketplace.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Buyers_UserId",
+                table: "Buyers",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Gigs_SellerAdId",
                 table: "Gigs",
                 column: "SellerAdId");
@@ -270,6 +301,9 @@ namespace ipz_marketplace.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Buyers");
 
             migrationBuilder.DropTable(
                 name: "Gigs");
