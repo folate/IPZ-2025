@@ -1,41 +1,50 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref as VueRef } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "../../stores/auth";
+
 import LoginModal from "../LoginModal.vue";
 import RegisterModal from "../RegisterModal.vue";
-import AdForm from "../AdForm.vue";
-const showAdForm = ref(false);
+
 const router = useRouter();
-const { isLoggedIn, logout } = useAuth();
+const { isLoggedIn, role, initAuth, logout } = useAuth();
 
-const showLogin = ref(false);
-const showRegister = ref(false);
-const handleAdForm = () => {
-  showAdForm.value = true;
-};
+const showLogin = VueRef(false);
+const showRegister = VueRef(false);
 
-const handleSwitch = () => {
+function openLogin() {
+  showRegister.value = false;
+  showLogin.value = true;
+}
+
+function openRegister() {
   showLogin.value = false;
   showRegister.value = true;
-};
+}
 
-watch(isLoggedIn, (v) => {
-  if (v) {
-    showLogin.value = false;
-    showRegister.value = false;
-  }
+function handleSwitchToRegister() {
+  openRegister();
+}
+
+async function handleLoginClose() {
+  showLogin.value = false;
+  await initAuth();
+}
+
+async function handleRegisterClose() {
+  showRegister.value = false;
+  await initAuth();
+}
+
+onMounted(async () => {
+  await initAuth();
 });
 
 const iconItems = computed(() => {
   if (!isLoggedIn.value) {
     return [
       { key: "cart", src: "/icons/cart.png", onClick: () => {} },
-      {
-        key: "login",
-        src: "/icons/login.png",
-        onClick: () => (showLogin.value = true),
-      },
+      { key: "login", src: "/icons/login.png", onClick: openLogin },
     ];
   }
 
@@ -54,11 +63,6 @@ const iconItems = computed(() => {
     },
     { key: "logout", src: "/icons/logout.png", onClick: () => logout() },
     { key: "cart", src: "/icons/cart.png", onClick: () => {} },
-    {
-      key: "ad-upload",
-      src: "/icons/upload.png",
-      onClick: () => handleAdForm(),
-    },
   ];
 });
 </script>
@@ -82,10 +86,9 @@ const iconItems = computed(() => {
 
   <LoginModal
     :isOpen="showLogin"
-    @close="showLogin = false"
-    @switchToRegister="handleSwitch"
+    @close="handleLoginClose"
+    @switchToRegister="handleSwitchToRegister"
   />
 
-  <RegisterModal :isOpen="showRegister" @close="showRegister = false" />
-  <AdForm :isOpen="showAdForm" @close="showAdForm = false" />
+  <RegisterModal :isOpen="showRegister" @close="handleRegisterClose" />
 </template>
