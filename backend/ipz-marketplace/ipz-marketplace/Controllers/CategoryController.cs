@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ipz_marketplace.Controllers
 {
@@ -24,6 +25,41 @@ namespace ipz_marketplace.Controllers
                 return NotFound("No categories found");
             }
             return Ok(result);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> CreateCategory([FromBody] string categoryName)
+        {
+            var existingCategory = _context.Categories.FirstOrDefault(c => c.Name == categoryName);
+            if (existingCategory != null)
+            {
+                return BadRequest("Category already exists");
+            }
+
+            var newCategory = new ipz_marketplace.Entities.Category
+            {
+                Name = categoryName
+            };
+            _context.Categories.Add(newCategory);
+            await _context.SaveChangesAsync();
+            return Ok("Category created successfully");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteCategory([FromBody] string categoryName)
+        {
+            var category = _context.Categories.FirstOrDefault(c => c.Name == categoryName);
+            if (category != null)
+            {
+                if(category.ToString() == categoryName)
+                {
+                    _context.Categories.Remove(category);
+                    return Ok("Category deleted");
+                }
+            }
+            return BadRequest("Category not found");
         }
     }
 }
