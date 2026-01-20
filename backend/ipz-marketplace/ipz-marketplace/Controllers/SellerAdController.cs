@@ -69,5 +69,26 @@ namespace ipz_marketplace.Controllers
                 .FirstOrDefault(a => a.Id == id);
             return Ok(ad);
         }
+        [HttpGet("all/{number}")]
+        public async Task<IActionResult> GetFewAds([FromRoute]int number)
+        {
+            List<ListingSellerAdDTO> sellerAds = _context.SellerAds
+                .Select(a => new ListingSellerAdDTO
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Gigs = a.Gigs.Select(g => new GigsDTO
+                    {
+                        TierName = g.TierName,
+                        TierDescription = g.TierDescription,
+                        Price = g.Price
+                    }).ToList()
+                })
+                .Take(number)
+                .ToList();
+
+            return Ok(sellerAds);
+        }
     }
 }
