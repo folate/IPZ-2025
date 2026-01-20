@@ -21,5 +21,5 @@ public class Buyer
     public DateTime JoinedDate { get; set; }
     public DateTime? LastOrderDate { get; set; } = null;
 
-    public string PreferredPaymentMethod { get; set; }
+    public string PreferredPaymentMethod { get; set; } = string.Empty;
 }

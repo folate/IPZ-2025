@@ -224,6 +224,58 @@ namespace ipz_marketplace.Migrations
                     b.ToTable("Gigs");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("CompletedJobs")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("HourlyRate")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("JoinedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PortfolioUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Rating")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Skills")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("TotalReviews")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Sellers");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.SellerAd", b =>
                 {
                     b.Property<int>("Id")
@@ -389,7 +441,7 @@ namespace ipz_marketplace.Migrations
             modelBuilder.Entity("ipz_marketplace.Entities.Buyer", b =>
                 {
                     b.HasOne("ipz_marketplace.Entities.User", "User")
-                        .WithOne()
+                        .WithOne("Buyer")
                         .HasForeignKey("ipz_marketplace.Entities.Buyer", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -408,6 +460,17 @@ namespace ipz_marketplace.Migrations
                     b.Navigation("SellerAd");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.User", "User")
+                        .WithOne("Seller")
+                        .HasForeignKey("ipz_marketplace.Entities.Seller", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.SellerAd", b =>
                 {
                     b.HasOne("ipz_marketplace.Entities.User", "Freelancer")
@@ -422,6 +485,15 @@ namespace ipz_marketplace.Migrations
             modelBuilder.Entity("ipz_marketplace.Entities.SellerAd", b =>
                 {
                     b.Navigation("Gigs");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.User", b =>
+                {
+                    b.Navigation("Buyer")
+                        .IsRequired();
+
+                    b.Navigation("Seller")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
