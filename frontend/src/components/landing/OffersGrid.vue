@@ -1,57 +1,64 @@
 <script setup>
-import { useRouter } from "vue-router"
-import Container from "../ui/Container.vue"
+import { ref, onMounted, onUnmounted } from "vue";
+import OfferCard from "./OfferCard.vue";
 
-const router = useRouter()
+const props = defineProps({
+  limit: { type: Number, default: 10 },
+});
 
-function onOfferClick(offer) 
-{
-  //na razie każda oferta -> buyer profile
-  router.push("/buyer/profile")
+const offers = ref([]);
+const loading = ref(false);
+const error = ref("");
+
+async function loadOffers() {
+  loading.value = true;
+  error.value = "";
+
+  try {
+    const res = await fetch(`/api/SellerAd/all/${props.limit}`, {
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      offers.value = [];
+      error.value = `Nie udało się pobrać ofert (${res.status}).`;
+      return;
+    }
+
+    const data = await res.json();
+    offers.value = Array.isArray(data) ? data : [];
+  } catch {
+    offers.value = [];
+    error.value = "Błąd sieci przy pobieraniu ofert.";
+  } finally {
+    loading.value = false;
+  }
 }
 
-const offers = [
-  { id: 1, variant: "A", stars: 3 },
-  { id: 2, variant: "B", stars: 2 },
-  { id: 3, variant: "C", stars: 3 },
-  { id: 4, variant: "B", stars: 4 },
-  { id: 5, variant: "C", stars: 3 },
-  { id: 6, variant: "A", stars: 3 },
-  { id: 7, variant: "B", stars: 2 },
-  { id: 8, variant: "C", stars: 4 },
-]
+function onCreated() {
+  loadOffers();
+}
+
+onMounted(() => {
+  loadOffers();
+  window.addEventListener("sellerad:created", onCreated);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("sellerad:created", onCreated);
+});
 </script>
 
 <template>
-  <section class="wrap">
-    <Container>
-      <div class="grid">
-        <button
-          v-for="o in offers"
-          :key="o.id"
-          class="card"
-          type="button"
-          @click="onOfferClick(o)"
-        >
-          <div class="box" :class="`v-${o.variant}`">
-            <div class="stars">
-              <span v-for="i in 5" :key="i" :class="{ on: i <= o.stars }">★</span>
-            </div>
+  <section class="offersSection">
+    <h2 class="offersTitle">Oferty</h2>
 
-            <div v-if="o.variant !== 'A'" class="topPrice">CENA</div>
-            <div class="title">TYTUŁ</div>
+    <p v-if="loading" class="offersInfo">Ładowanie...</p>
+    <p v-else-if="error" class="offersError">{{ error }}</p>
+    <p v-else-if="offers.length === 0" class="offersInfo">Brak ofert.</p>
 
-            <div v-if="o.variant === 'A'" class="bottom">
-              <span class="user">USER</span>
-              <span class="price">CENA</span>
-            </div>
-          </div>
-        </button>
-      </div>
-    </Container>
+    <div v-else class="offersGrid">
+      <OfferCard v-for="o in offers" :key="o.id" :offer="o" />
+    </div>
   </section>
 </template>
-
-<style scoped>
-
-</style>
