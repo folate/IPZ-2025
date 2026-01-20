@@ -10,11 +10,11 @@ namespace ipz_marketplace.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AdController : ControllerBase
+    public class SellerAdController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly MarketplaceDbContext _context;
-        public AdController(UserManager<User> userManager, MarketplaceDbContext context)
+        public SellerAdController(UserManager<User> userManager, MarketplaceDbContext context)
         {
             _userManager = userManager;
             _context = context;
@@ -27,7 +27,7 @@ namespace ipz_marketplace.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null)
             {
-                return Unauthorized("testing backend and userId here: " + userId);
+                return Unauthorized("userId went wrong!");
             }
 
             var ad = new SellerAd
@@ -47,7 +47,7 @@ namespace ipz_marketplace.Controllers
             _context.SellerAds.Add(ad);
             await _context.SaveChangesAsync();
 
-            return Ok(userId);
+            return Ok("Sucessfuly created!");
         }
 
         [HttpGet("{id}")]

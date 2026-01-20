@@ -37,11 +37,12 @@ namespace ipz_marketplace.Controllers
             return await _authService.Register(userInfo);
         }
 
-        [HttpPost("modify")]
+        [HttpPut("modify")]
         public async Task<IActionResult> Modify([FromBody] UserModifyDTO userInfo)
         {
             return await _authService.Modify(userInfo);
         }
+        
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
