@@ -27,8 +27,13 @@
             <div class="field-group">
               <Field name="categories" as="select">
                 <option value="" disabled>Select Category</option>
-                <option value="cat1">cat1</option>
-                <option value="cat2">cat2</option>
+                <option
+                  v-for="category in categoryList"
+                  :key="category.name"
+                  :value="category.name"
+                >
+                  {{ category.name }}
+                </option>
               </Field>
               <ErrorMessage name="categories" class="error-text" />
             </div>
@@ -60,6 +65,7 @@
                     :name="`tiers[${index}].price`"
                     type="number"
                     placeholder="Price"
+                    min="0"
                   />
                   <ErrorMessage
                     :name="`tiers[${index}].price`"
@@ -116,7 +122,22 @@ import { Form, Field, ErrorMessage, FieldArray } from "vee-validate";
 
 defineProps(["isOpen"]);
 const emit = defineEmits(["close"]);
+const categoryList = vue.ref([]);
 
+const fetchCategories = async () => {
+  try {
+    const response = await fetch("/api/category");
+    if (response.ok) {
+      const data = await response.json();
+      categoryList.value = data;
+    }
+  } catch (err) {
+    console.error("Failed to fetch categories:", err);
+  }
+};
+vue.onMounted(() => {
+  fetchCategories();
+});
 const schema = yup.object({
   title: yup.string().required("Title is required"),
   description: yup.string().required("Description is required"),
