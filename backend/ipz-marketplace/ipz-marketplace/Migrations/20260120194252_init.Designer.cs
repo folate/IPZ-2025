@@ -12,7 +12,7 @@ using ipz_marketplace;
 namespace ipz_marketplace.Migrations
 {
     [DbContext(typeof(MarketplaceDbContext))]
-    [Migration("20260120180843_init")]
+    [Migration("20260120194252_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -196,6 +196,24 @@ namespace ipz_marketplace.Migrations
                         .IsUnique();
 
                     b.ToTable("Buyers");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Gigs", b =>

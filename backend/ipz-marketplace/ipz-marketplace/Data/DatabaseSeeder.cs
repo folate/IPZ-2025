@@ -85,6 +85,25 @@ public class DatabaseSeeder
         };
 
         context.Buyers.Add(adminBuyer);
+
+        var categories = new string[]
+        {
+            "Web Development",
+            "Graphic Design",
+            "Content Writing",
+            "Digital Marketing",
+            "Video Editing"
+        };
+
+        foreach (var categoryName in categories)
+        {
+            var category = new ipz_marketplace.Entities.Category
+            {
+                Name =  categoryName
+            };
+            context.Categories.Add(category);
+        }
+
         await context.SaveChangesAsync();
     }
 }

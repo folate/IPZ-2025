@@ -195,6 +195,24 @@ namespace ipz_marketplace.Migrations
                     b.ToTable("Buyers");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Gigs", b =>
                 {
                     b.Property<int>("Id")
