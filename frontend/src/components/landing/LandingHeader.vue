@@ -1,50 +1,45 @@
 <script setup>
-import { computed, onMounted, ref as VueRef } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "../../stores/auth";
-
 import LoginModal from "../LoginModal.vue";
 import RegisterModal from "../RegisterModal.vue";
-
-const router = useRouter();
-const { isLoggedIn, role, initAuth, logout } = useAuth();
+import { ref as VueRef } from "vue";
 
 const showLogin = VueRef(false);
 const showRegister = VueRef(false);
 
-function openLogin() {
-  showRegister.value = false;
-  showLogin.value = true;
-}
-
-function openRegister() {
-  showLogin.value = false;
-  showRegister.value = true;
-}
-
-function handleSwitchToRegister() {
-  openRegister();
-}
-
-async function handleLoginClose() {
-  showLogin.value = false;
-  await initAuth();
-}
-
-async function handleRegisterClose() {
-  showRegister.value = false;
-  await initAuth();
-}
+const router = useRouter();
+const { isLoggedIn, initAuth, logout } = useAuth();
 
 onMounted(async () => {
   await initAuth();
 });
 
+const handleSwitch = () => {
+  showLogin.value = false;
+  showRegister.value = true;
+};
+
+async function closeLoginAndRefresh() {
+  showLogin.value = false;
+  await initAuth();
+}
+
+async function closeRegisterAndRefresh() {
+  showRegister.value = false;
+  await initAuth();
+}
+
 const iconItems = computed(() => {
   if (!isLoggedIn.value) {
     return [
       { key: "cart", src: "/icons/cart.png", onClick: () => {} },
-      { key: "login", src: "/icons/login.png", onClick: openLogin },
+      {
+        key: "login",
+        src: "/icons/login.png",
+        onClick: () => (showLogin.value = true),
+      },
     ];
   }
 
@@ -86,9 +81,9 @@ const iconItems = computed(() => {
 
   <LoginModal
     :isOpen="showLogin"
-    @close="handleLoginClose"
-    @switchToRegister="handleSwitchToRegister"
+    @close="closeLoginAndRefresh"
+    @switchToRegister="handleSwitch"
   />
 
-  <RegisterModal :isOpen="showRegister" @close="handleRegisterClose" />
+  <RegisterModal :isOpen="showRegister" @close="closeRegisterAndRefresh" />
 </template>

@@ -2,11 +2,10 @@
 import { onMounted } from "vue";
 import { useAuth } from "./stores/auth";
 
-const { initAuth, role, state } = useAuth();
+const { initAuth } = useAuth();
 
 onMounted(async () => {
   await initAuth();
-  console.log("ROLE:", role.value);
 });
 </script>
 

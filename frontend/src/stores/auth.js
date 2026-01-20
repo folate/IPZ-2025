@@ -6,46 +6,26 @@ const state = reactive({
   loading: false,
 });
 
-function normalizeRole(payload) {
-  const roleFromSingle =
-    payload?.role || payload?.Role || payload?.userRole || payload?.UserRole;
-
-  const rolesFromArray =
-    payload?.roles ||
-    payload?.Roles ||
-    payload?.userRoles ||
-    payload?.UserRoles;
-
-  let role = roleFromSingle;
-
-  if (!role && Array.isArray(rolesFromArray) && rolesFromArray.length) {
-    if (rolesFromArray.includes("Admin")) role = "Admin";
-    else if (rolesFromArray.includes("Freelancer")) role = "Freelancer";
-    else if (rolesFromArray.includes("User")) role = "User";
-    else role = rolesFromArray[0];
-  }
-
-  if (role === "Admin") return ROLES.ADMIN ?? "Admin";
-  if (role === "Freelancer") return ROLES.FREELANCER ?? "Freelancer";
-  if (role === "User") return ROLES.USER ?? "User";
-
-  if (ALL_ROLES.includes(role)) return role;
-
-  return ROLES.GUEST;
+function mapRole(roles) {
+  if (roles.includes("Admin")) return ROLES.ADMIN;
+  if (roles.includes("Buyer")) return ROLES.BUYER;
+  if (roles.includes("Seller")) return ROLES.SELLER;
+  return ROLES.USER;
 }
 
 export function useAuth() {
-  const role = computed(() => state.user?.role || ROLES.GUEST);
+  const role = computed(() => state.user?.role ?? ROLES.GUEST);
   const isLoggedIn = computed(() => role.value !== ROLES.GUEST);
 
-  function hasRole(...roles) {
-    return roles.includes(role.value);
+  function hasRole(...rolesToCheck) {
+    return rolesToCheck.includes(role.value);
   }
 
   async function initAuth() {
     state.loading = true;
+
     try {
-      const res = await fetch("/api/user/getUser", {
+      const res = await fetch("/api/User/getUser", {
         method: "GET",
         credentials: "include",
       });
@@ -57,37 +37,32 @@ export function useAuth() {
 
       const data = await res.json();
 
+      const roles = Array.isArray(data?.role) ? data.role : [];
+      const finalRole = mapRole(roles);
+
       state.user = {
-        username: data?.userName || data?.username || data?.login || "unknown",
-        roles: data?.roles || data?.Roles || [],
-        role: normalizeRole(data),
-        raw: data,
+        login: data?.login ?? null,
+        roles,
+        role: ALL_ROLES.includes(finalRole) ? finalRole : ROLES.USER,
       };
-    } catch {
+    } catch (e) {
       state.user = null;
     } finally {
       state.loading = false;
     }
   }
 
-  async function logout() {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch {
-    } finally {
-      state.user = null;
-    }
-  }
-
   function setMockRole(newRole) {
     if (!ALL_ROLES.includes(newRole)) return;
+
     state.user =
       newRole === ROLES.GUEST
         ? null
-        : { id: "demo", email: "demo@demo.com", role: newRole };
+        : { login: "demo", roles: [newRole], role: newRole };
+  }
+
+  function logout() {
+    state.user = null;
   }
 
   return {
@@ -96,7 +71,7 @@ export function useAuth() {
     isLoggedIn,
     hasRole,
     initAuth,
-    logout,
     setMockRole,
+    logout,
   };
 }
