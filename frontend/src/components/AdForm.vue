@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="modal-overlay" @click.self="$emit('close')">
-      <div class="modal-content">
+      <div class="modal-content-adform">
         <button type="button" id="cancelButton" @click="$emit('close')">
           ×
         </button>
@@ -9,27 +9,29 @@
 
         <Form
           :validation-schema="schema"
+          :initial-values="{ tiers: [{ name: '', price: 0, description: '' }] }"
           @submit="onSubmit"
-          v-slot="{ values, errors }"
+          v-slot="{ values }"
         >
           <div id="fields-flex">
-            <Field name="title" type="text" placeholder="Title" />
-            <ErrorMessage name="title" class="error-text" />
+            <div class="field-group">
+              <Field name="title" type="text" placeholder="Title" />
+              <ErrorMessage name="title" class="error-text" />
+            </div>
 
-            <Field
-              name="description"
-              as="input"
-              type="text"
-              placeholder="Description"
-            />
-            <ErrorMessage name="description" class="error-text" />
+            <div class="field-group">
+              <Field name="description" type="text" placeholder="Description" />
+              <ErrorMessage name="description" class="error-text" />
+            </div>
 
-            <Field name="categories" as="select">
-              <option value="" disabled>Select Category</option>
-              <option value="cat1">cat1</option>
-              <option value="cat2">cat2</option>
-            </Field>
-            <ErrorMessage name="categories" class="error-text" />
+            <div class="field-group">
+              <Field name="categories" as="select">
+                <option value="" disabled>Select Category</option>
+                <option value="cat1">cat1</option>
+                <option value="cat2">cat2</option>
+              </Field>
+              <ErrorMessage name="categories" class="error-text" />
+            </div>
 
             <hr />
             <h3>Tiers</h3>
@@ -57,7 +59,7 @@
                   <Field
                     :name="`tiers[${index}].price`"
                     type="number"
-                    placeholder="Tier Price"
+                    placeholder="Price"
                   />
                   <ErrorMessage
                     :name="`tiers[${index}].price`"
@@ -77,10 +79,11 @@
                 </div>
 
                 <button
+                  v-if="index !== 0"
                   type="button"
-                  @click="remove(index)"
-                  v-if="fields.length > 1"
+                  id="submit"
                   class="remove-btn"
+                  @click="remove(index)"
                 >
                   Remove Tier
                 </button>
@@ -88,8 +91,9 @@
 
               <button
                 type="button"
-                @click="push({ name: '', price: 0, description: '' })"
                 class="add-btn"
+                id="submit"
+                @click="push({ name: '', price: 0, description: '' })"
               >
                 + Add Tier
               </button>
@@ -97,7 +101,7 @@
           </div>
 
           <div id="buttons">
-            <button type="submit">Submit Listing</button>
+            <button type="submit" id="submit">Submit Listing</button>
           </div>
         </Form>
       </div>
@@ -128,7 +132,7 @@ const schema = yup.object({
           .required("Price required")
           .positive("Price must be positive"),
         description: yup.string().required("Tier Description required"),
-      })
+      }),
     )
     .min(1, "At least one tier is required"),
 });
@@ -141,7 +145,7 @@ const onSubmit = async (values) => {
       Price: tier.price,
     }));
 
-    const response = await fetch("/api/ad/create", {
+    const response = await fetch("/api/sellerad/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -149,7 +153,6 @@ const onSubmit = async (values) => {
         Description: values.description,
         Category: values.categories,
         Gigs: gigsPayload,
-        // If you handle photos later, add them here
       }),
     });
 

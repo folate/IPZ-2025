@@ -115,6 +115,16 @@ body {
   z-index: 1000;
   color: var(--modal-font-color);
 }
+.modal-content-adform {
+  min-width: 80vw;
+  text-align: center;
+  background: var(--background-main);
+  padding: 2rem;
+  border-radius: 8px;
+
+  box-shadow: 10px 10px 10px 10px var(--box-shadow-color);
+  width: 20%;
+}
 .modal-content {
   min-width: 40vh;
   text-align: center;
@@ -125,7 +135,8 @@ body {
   box-shadow: 10px 10px 10px 10px var(--box-shadow-color);
   width: 20%;
 }
-.modal-content input {
+.modal-content input,
+.modal-content-adform input {
   border: none;
   background-color: var(--background-input);
   padding: 10px;
@@ -146,6 +157,7 @@ div#fields-flex {
   border: var(--border-ui);
 }
 button#ButtonModal,
+button#submit,
 button#cancelButton {
   border: none;
   background-color: var(--background-input);
