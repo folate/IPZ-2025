@@ -61,8 +61,17 @@ export function useAuth() {
         : { login: "demo", roles: [newRole], role: newRole };
   }
 
-  function logout() {
-    state.user = null;
+  async function logout() {
+    try {
+      await fetch("/api/Auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.warn("Logout request failed:", e);
+    } finally {
+      state.user = null;
+    }
   }
 
   return {
