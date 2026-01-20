@@ -50,6 +50,28 @@ public class DatabaseSeeder
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
+        var tab = new[] { "user", "freelancer" };
+
+        foreach (var name in tab) {
+            var user = new User
+            {
+                UserName = name,
+                Email = "user@marketplace.com",
+                EmailConfirmed = true,
+                FirstName = "uesr",
+                LastName = "using",
+                CreateDate = DateTime.UtcNow
+            };
+
+            if ((await userManager.CreateAsync(user, "Tuba123!")).Succeeded)
+            {
+                if(user.UserName == "freelancer")
+                    await userManager.AddToRoleAsync(user, "Freelancer");
+                else
+                    await userManager.AddToRoleAsync(user, "User");
+            }
+
+        }
 
         var adminBuyer = new Buyer
         {
@@ -63,6 +85,25 @@ public class DatabaseSeeder
         };
 
         context.Buyers.Add(adminBuyer);
+
+        var categories = new string[]
+        {
+            "Web Development",
+            "Graphic Design",
+            "Content Writing",
+            "Digital Marketing",
+            "Video Editing"
+        };
+
+        foreach (var categoryName in categories)
+        {
+            var category = new ipz_marketplace.Entities.Category
+            {
+                Name =  categoryName
+            };
+            context.Categories.Add(category);
+        }
+
         await context.SaveChangesAsync();
     }
 }

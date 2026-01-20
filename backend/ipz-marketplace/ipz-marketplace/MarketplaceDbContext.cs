@@ -13,6 +13,7 @@ public class MarketplaceDbContext : IdentityDbContext<User>
     public DbSet<Gigs> Gigs { get; set; }
     public DbSet<Buyer> Buyers { get; set; }
     public DbSet<Seller> Sellers { get; set; }
+    public DbSet<Category> Categories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -23,6 +24,11 @@ public class MarketplaceDbContext : IdentityDbContext<User>
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
             entity.Property(e => e.Email).HasMaxLength(256);
+        });
+
+        builder.Entity<Category>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         builder.Entity<SellerAd>()

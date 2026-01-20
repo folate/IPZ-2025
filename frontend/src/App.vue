@@ -1,19 +1,12 @@
 <script setup>
-import { onMounted } from "vue"
-import { useAuth } from "./stores/auth"
-import { ROLES } from "./auth/roles"
+import { onMounted } from "vue";
+import { useAuth } from "./stores/auth";
 
-const { initAuth, setMockRole, state, role } = useAuth()
+const { initAuth } = useAuth();
 
 onMounted(async () => {
-  // await initAuth()
-
-  setMockRole(ROLES.BUYER)
-  // setMockRole(ROLES.SELLER)
-  // setMockRole(ROLES.GUEST)
-
-  console.log("AKTUALNA ROLA:", role.value)
-})
+  await initAuth();
+});
 </script>
 
 <template>

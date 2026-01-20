@@ -13,9 +13,11 @@ namespace ipz_marketplace.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;
-        public AuthController(AuthService authService)
+        private readonly SignInManager<User> _signInManager;
+        public AuthController(AuthService authService, SignInManager<User> signInManager)
         {
             _authService = authService;
+            _signInManager = signInManager;
         }
 
         [HttpPost("login")]
@@ -35,10 +37,17 @@ namespace ipz_marketplace.Controllers
             return await _authService.Register(userInfo);
         }
 
-        [HttpPost("modify")]
+        [HttpPut("modify")]
         public async Task<IActionResult> Modify([FromBody] UserModifyDTO userInfo)
         {
             return await _authService.Modify(userInfo);
+        }
+        
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return Ok("Logged out successfully.");
         }
     }
 }

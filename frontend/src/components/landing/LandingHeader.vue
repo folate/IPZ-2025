@@ -1,27 +1,37 @@
 <script setup>
-import { computed, ref, watch } from "vue"
-import { useRouter } from "vue-router"
-import { useAuth } from "../../stores/auth"
-import LoginModal from "../LoginModal.vue"
-import RegisterModal from "../RegisterModal.vue"
+import { computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuth } from "../../stores/auth";
+import LoginModal from "../LoginModal.vue";
+import RegisterModal from "../RegisterModal.vue";
+import { ref as VueRef } from "vue";
+import AdForm from "../AdForm.vue";
+const showAdForm = VueRef(false);
 
-const router = useRouter()
-const { isLoggedIn, logout } = useAuth()
+const router = useRouter();
+const { isLoggedIn, initAuth, logout } = useAuth();
 
-const showLogin = ref(false)
-const showRegister = ref(false)
+const showLogin = VueRef(false);
+const showRegister = VueRef(false);
 
-const handleSwitch = () => {
-  showLogin.value = false
-  showRegister.value = true
-}
+onMounted(async () => {
+  await initAuth();
+});
 
-watch(isLoggedIn, (v) => {
-  if (v) {
-    showLogin.value = false
-    showRegister.value = false
-  }
-})
+const handleSwitchToRegister = () => {
+  showLogin.value = false;
+  showRegister.value = true;
+};
+
+const closeLoginAndRefresh = async () => {
+  showLogin.value = false;
+  await initAuth();
+};
+
+const closeRegisterAndRefresh = async () => {
+  showRegister.value = false;
+  await initAuth();
+};
 
 const iconItems = computed(() => {
   if (!isLoggedIn.value) {
@@ -32,18 +42,38 @@ const iconItems = computed(() => {
         src: "/icons/login.png",
         onClick: () => (showLogin.value = true),
       },
-    ]
+    ];
   }
 
   return [
-    { key: "upload", src: "/icons/upload.png", onClick: () => router.push("/buyer/ad") },
+    {
+      key: "upload",
+      src: "/icons/adform.png",
+      onClick: () => (showAdForm.value = true),
+    },
+    {
+      key: "upload",
+      src: "/icons/upload.png",
+      onClick: () => router.push("/buyer/ad"),
+    },
     { key: "favourites", src: "/icons/favourites.png", onClick: () => {} },
     { key: "notfulfilled", src: "/icons/notfulfilled.png", onClick: () => {} },
-    { key: "user", src: "/icons/user.png", onClick: () => router.push("/seller/profile") },
-    { key: "logout", src: "/icons/logout.png", onClick: () => logout() },
+    {
+      key: "user",
+      src: "/icons/user.png",
+      onClick: () => router.push("/seller/profile"),
+    },
+    {
+      key: "logout",
+      src: "/icons/logout.png",
+      onClick: async () => {
+        await logout();
+        router.push("/");
+      },
+    },
     { key: "cart", src: "/icons/cart.png", onClick: () => {} },
-  ]
-})
+  ];
+});
 </script>
 
 <template>
@@ -65,65 +95,10 @@ const iconItems = computed(() => {
 
   <LoginModal
     :isOpen="showLogin"
-    @close="showLogin = false"
-    @switchToRegister="handleSwitch"
+    @close="closeLoginAndRefresh"
+    @switchToRegister="handleSwitchToRegister"
   />
 
-  <RegisterModal
-    :isOpen="showRegister"
-    @close="showRegister = false"
-  />
+  <RegisterModal :isOpen="showRegister" @close="closeRegisterAndRefresh" />
+  <AdForm :isOpen="showAdForm" @close="showAdForm = false" />
 </template>
-
-<style scoped>
-.landingHeader
-{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 14px 24px;
-  background: #f2f2f2;
-  border-bottom: 1px solid #cfcfcf;
-}
-
-.logo
-{
-  font-weight: 800;
-  font-size: 20px;
-}
-
-.headerIcons
-{
-  display: flex;
-  gap: 10px;
-}
-
-.iconBox
-{
-  width: 46px;
-  height: 46px;
-
-  display: grid;
-  place-items: center;
-
-  background: #f2f2f2;
-  border: 1px solid #cfcfcf;
-  border-radius: 12px;
-
-  cursor: pointer;
-  padding: 0;
-}
-
-.iconBox:hover
-{
-  background: #e6e6e6;
-}
-
-.iconImg
-{
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-</style>
