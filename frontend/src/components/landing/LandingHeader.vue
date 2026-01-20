@@ -5,6 +5,8 @@ import { useAuth } from "../../stores/auth";
 import LoginModal from "../LoginModal.vue";
 import RegisterModal from "../RegisterModal.vue";
 import { ref as VueRef } from "vue";
+import AdForm from "../AdForm.vue";
+const showAdForm = VueRef(false);
 
 const showLogin = VueRef(false);
 const showRegister = VueRef(false);
@@ -44,6 +46,11 @@ const iconItems = computed(() => {
   }
 
   return [
+    {
+      key: "upload",
+      src: "/icons/adform.png", // 2. Ensure this matches your filename
+      onClick: () => (showAdForm.value = true), // 3. Open the modal
+    },
     {
       key: "upload",
       src: "/icons/upload.png",
@@ -86,4 +93,5 @@ const iconItems = computed(() => {
   />
 
   <RegisterModal :isOpen="showRegister" @close="closeRegisterAndRefresh" />
+  <AdForm :isOpen="showAdForm" @close="showAdForm = false" />
 </template>
