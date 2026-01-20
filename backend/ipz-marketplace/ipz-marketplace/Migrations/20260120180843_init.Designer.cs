@@ -12,7 +12,7 @@ using ipz_marketplace;
 namespace ipz_marketplace.Migrations
 {
     [DbContext(typeof(MarketplaceDbContext))]
-    [Migration("20260119193259_init")]
+    [Migration("20260120180843_init")]
     partial class init
     {
         /// <inheritdoc />

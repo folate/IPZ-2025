@@ -5,6 +5,8 @@ import { useAuth } from "../../stores/auth";
 import LoginModal from "../LoginModal.vue";
 import RegisterModal from "../RegisterModal.vue";
 import { ref as VueRef } from "vue";
+import AdForm from "../AdForm.vue";
+const showAdForm = VueRef(false);
 
 const router = useRouter();
 const { isLoggedIn, initAuth, logout } = useAuth();
@@ -44,6 +46,11 @@ const iconItems = computed(() => {
   }
 
   return [
+    {
+      key: "upload",
+      src: "/icons/adform.png",
+      onClick: () => (showAdForm.value = true),
+    },
     {
       key: "upload",
       src: "/icons/upload.png",
@@ -93,4 +100,5 @@ const iconItems = computed(() => {
   />
 
   <RegisterModal :isOpen="showRegister" @close="closeRegisterAndRefresh" />
+  <AdForm :isOpen="showAdForm" @close="showAdForm = false" />
 </template>
