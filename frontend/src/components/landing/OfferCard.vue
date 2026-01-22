@@ -1,34 +1,41 @@
 <script setup>
-const props = defineProps({
-  title: { type: String, default: "TYTUŁ" },
-  user: { type: String, default: "USER" },
-  price: { type: String, default: "CENA" },
-  stars: { type: Number, default: 3 }, // 0..5
-  showPriceTop: { type: Boolean, default: false },
-})
+import { computed } from "vue";
 
-const emit = defineEmits(["click"])
+const props = defineProps({
+  offer: { type: Object, required: true },
+});
+
+const user = computed(() => props.offer?.freelancer || "USER");
+const title = computed(() => props.offer?.title || "TYTUŁ");
+
+const price = computed(() => {
+  const gigs = props.offer?.gigs;
+  if (!Array.isArray(gigs) || gigs.length === 0) return "0 zł";
+
+  const prices = gigs.map((g) => Number(g?.price)).filter(Number.isFinite);
+
+  if (prices.length === 0) return "0 zł";
+
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+
+  return min === max
+    ? `${min.toFixed(0)} zł`
+    : `${min.toFixed(0)}-${max.toFixed(0)} zł`;
+});
 </script>
 
 <template>
-  <article class="card" role="button" tabindex="0"
-    @click="emit('click')"
-    @keydown.enter.prevent="emit('click')"
-    @keydown.space.prevent="emit('click')"
-  >
-    <div class="media">
-      <div v-if="showPriceTop" class="priceTop">CENA</div>
+  <article class="offerCard">
+    <div class="offerStars" aria-label="rating">★★★★★</div>
 
-      <div class="stars" aria-label="Ocena">
-        <span v-for="i in 5" :key="i" :class="{ on: i <= stars }">★</span>
-      </div>
+    <h3 class="offerTitle">{{ title }}</h3>
 
-      <div class="title">{{ title }}</div>
-      <div class="meta">
-        <span>{{ user }}</span>
-        <span class="price">{{ price }}</span>
-      </div>
+    <div class="offerDivider"></div>
+
+    <div class="offerMeta">
+      <span class="offerUser">{{ user }}</span>
+      <span class="offerPrice">{{ price }}</span>
     </div>
   </article>
 </template>
-
