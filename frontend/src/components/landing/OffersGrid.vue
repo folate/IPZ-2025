@@ -57,8 +57,10 @@ onUnmounted(() => {
     <p v-else-if="error" class="offersError">{{ error }}</p>
     <p v-else-if="offers.length === 0" class="offersInfo">Brak ofert.</p>
 
-    <div v-else class="offersGrid">
-      <OfferCard v-for="o in offers" :key="o.id" :offer="o" />
+    <div class="offersGrid">
+      <RouterLink v-for="o in offers" :key="o.id" :to="`/offer/${o.id}`">
+        <OfferCard :offer="o" />
+      </RouterLink>
     </div>
   </section>
 </template>

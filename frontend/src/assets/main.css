@@ -30,7 +30,22 @@
 
   --border-heavy: 3px solid rgba(0, 0, 0, 0.18);
 }
-
+/* Offer Details */
+.detailsPage .Title {
+  font-size: 22px;
+  font-weight: 900;
+}
+.detailsPage .Tiers {
+  display: flex;
+  flex-direction: row;
+}
+.detailsPage {
+  margin: 10%;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+}
+/* Main */
 form [type="checkbox"] {
   -webkit-appearance: checkbox !important;
   appearance: auto;

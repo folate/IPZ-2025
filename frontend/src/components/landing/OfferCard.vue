@@ -28,7 +28,6 @@ const price = computed(() => {
 <template>
   <article class="offerCard">
     <div class="offerStars" aria-label="rating">★★★★★</div>
-
     <h3 class="offerTitle">{{ title }}</h3>
 
     <div class="offerDivider"></div>
