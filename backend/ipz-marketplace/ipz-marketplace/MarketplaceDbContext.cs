@@ -14,6 +14,7 @@ public class MarketplaceDbContext : IdentityDbContext<User>
     public DbSet<Buyer> Buyers { get; set; }
     public DbSet<Seller> Sellers { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<BuyerAd> BuyerAds { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
