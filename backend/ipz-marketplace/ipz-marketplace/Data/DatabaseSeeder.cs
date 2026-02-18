@@ -65,23 +65,10 @@ public class DatabaseSeeder
 
             if ((await userManager.CreateAsync(user, "Tuba123!")).Succeeded)
             {
-                if (user.UserName == "freelancer")
+                if(user.UserName == "freelancer")
                     await userManager.AddToRoleAsync(user, "Freelancer");
                 else
-                {
                     await userManager.AddToRoleAsync(user, "User");
-                    var userBuyer = new Buyer
-                    {
-                        UserId = user.Id,
-                        ShippingAddress = "456 User Street",
-                        BillingAddress = "456 User Street",
-                        TotalOrders = 0,
-                        JoinedDate = DateTime.UtcNow,
-                        LastOrderDate = null,
-                        PreferredPaymentMethod = "PayPal"
-                    };
-                    context.Buyers.Add(userBuyer);
-                }
             }
 
         }
