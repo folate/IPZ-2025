@@ -66,7 +66,41 @@ public class DatabaseSeeder
             if ((await userManager.CreateAsync(user, "Tuba123!")).Succeeded)
             {
                 if (user.UserName == "freelancer")
+                {
                     await userManager.AddToRoleAsync(user, "Freelancer");
+                    var sellerAd = new SellerAd
+                    {
+                        Id = 1,
+                        Title = "Test Seller Ad",
+                        Description = "Description of testing sellerAd.",
+                        CreateDate = DateTime.UtcNow,
+                        Freelancer = user,
+                        FreelancerId = user.Id
+                    };
+
+                    var gig = new Gigs
+                    {
+                        Id = 1,
+                        TierName = "Sample Gig",
+                        TierDescription = "Description of tier.",
+                        Price = 100,
+                        SellerAdId = sellerAd.Id,
+                        SellerAd = sellerAd
+                    };
+                    context.SellerAds.Add(sellerAd);
+                    context.Gigs.Add(gig);
+
+                    var gig2 = new Gigs
+                    {
+                        Id = 2,
+                        TierName = "Sample Gig 2",
+                        TierDescription = "Description of tier.",
+                        Price = 200,
+                        SellerAdId = sellerAd.Id,
+                        SellerAd = sellerAd
+                    };
+                    context.Gigs.Add(gig2);
+                }
                 else
                 {
                     await userManager.AddToRoleAsync(user, "User");
