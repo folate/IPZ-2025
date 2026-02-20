@@ -40,6 +40,11 @@ const router = createRouter({
       component: () => import("../views/OfferDetails/OfferDetailsCard.vue"),
       props: true,
     },
+    {
+      path: "/liked",
+      name: "Liked",
+      component: () => import("../views/Liked/Liked.vue"),
+    },
   ],
 });
 

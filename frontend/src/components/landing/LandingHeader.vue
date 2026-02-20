@@ -56,7 +56,11 @@ const iconItems = computed(() => {
       src: "/icons/upload.png",
       onClick: () => router.push("/buyer/ad"),
     },
-    { key: "favourites", src: "/icons/favourites.png", onClick: () => {} },
+    {
+      key: "favourites",
+      src: "/icons/favourites.png",
+      onClick: () => router.push("/liked"),
+    },
     { key: "notfulfilled", src: "/icons/notfulfilled.png", onClick: () => {} },
     {
       key: "user",

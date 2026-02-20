@@ -2,6 +2,7 @@
 import LandingHeader from "@/components/landing/LandingHeader.vue";
 import * as vue from "vue";
 import { useRoute } from "vue-router";
+import offerImage from "../../../public/Placeholders/offerImage.png";
 const route = useRoute();
 const offerDetails = vue.ref(null);
 const error = vue.ref("");
@@ -21,8 +22,8 @@ async function fetchDetails() {
 
 vue.onMounted(fetchDetails);
 
-function buyTier() {
-  console.log("tier bought");
+function buyTier(tier) {
+  console.log("tier bought:", tier.tierName, " ", tier.price, "zł");
 }
 </script>
 <template>
@@ -43,7 +44,7 @@ function buyTier() {
             <p class="Title">{{ tier.tierName }}</p>
             <p class="Description">{{ tier.tierDescription }}</p>
             <p class="Price">{{ tier.price }}</p>
-            <button v-on:click="buyTier()">Buy!</button>
+            <button v-on:click="buyTier(tier)">Buy!</button>
           </div>
         </div>
       </div>

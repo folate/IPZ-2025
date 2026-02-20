@@ -40,10 +40,16 @@
   flex-direction: row;
 }
 .detailsPage {
-  margin: 10%;
+  margin-left: 10%;
   font-size: 15px;
   display: flex;
   flex-direction: column;
+  margin-right: 10%;
+  margin-top: 3%;
+  background-color: var(--background-input);
+  border-radius: 5px;
+  min-height: 60vh;
+  padding: 0.2%;
 }
 /* Main */
 form [type="checkbox"] {

@@ -36,11 +36,11 @@ const fetchProfileInfo = async () => {
 <template>
   <main>
     <LandingHeader />
-    Hi {{ ProfileInfo.firstName }} {{ ProfileInfo.lastName }}!<br />
-    Joined date:{{ ProfileInfo.JoinDate }}<br />
-    Total Orders: {{ ProfileInfo.totalOrders }}<br />
-    Last Order Date:{{ ProfileInfo.lastorderDate }}<br />
-    In Progress: <br />
-    Finished:<br />
+    <p>Hi {{ ProfileInfo.firstName }} {{ ProfileInfo.lastName }}!</p>
+    <p>Joined date:{{ ProfileInfo.JoinDate }}</p>
+    <p>Total Orders: {{ ProfileInfo.totalOrders }}</p>
+    <p>Last Order Date:{{ ProfileInfo.lastorderDate }}</p>
+    <p>In Progress:</p>
+    <p>Finished:</p>
   </main>
 </template>
