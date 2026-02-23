@@ -20,7 +20,7 @@ namespace ipz_marketplace.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "Freelancer")]
+        [Authorize(Roles = "Seller")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateAd([FromBody] SellerAdDTO adDto)
         {

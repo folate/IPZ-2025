@@ -23,7 +23,7 @@ public class DatabaseSeeder
         }
 
         // Utwórz rolę Admin jeśli nie istnieje
-        var Roles = new[] { "Admin", "User", "Freelancer" };
+        var Roles = new[] { "Admin", "Buyer", "Seller" };
 
         foreach (var role in Roles)
         {
@@ -50,7 +50,7 @@ public class DatabaseSeeder
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
-        var tab = new[] { "user", "freelancer" };
+        var tab = new[] { "buyer", "freelancer" };
 
         foreach (var name in tab) {
             var user = new User
@@ -67,7 +67,7 @@ public class DatabaseSeeder
             {
                 if (user.UserName == "freelancer")
                 {
-                    await userManager.AddToRoleAsync(user, "Freelancer");
+                    await userManager.AddToRoleAsync(user, "Seller");
                     var sellerAd = new SellerAd
                     {
                         Id = 1,
@@ -103,7 +103,7 @@ public class DatabaseSeeder
                 }
                 else
                 {
-                    await userManager.AddToRoleAsync(user, "User");
+                    await userManager.AddToRoleAsync(user, "Buyer");
                     var userBuyer = new Buyer
                     {
                         UserId = user.Id,

@@ -281,6 +281,51 @@ namespace ipz_marketplace.Migrations
                     b.ToTable("Gigs");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdditionalInstructions")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AproxDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("BuyerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GigsId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId");
+
+                    b.HasIndex("SellerId");
+
+                    b.ToTable("Orders");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
                 {
                     b.Property<int>("Id")
@@ -529,6 +574,33 @@ namespace ipz_marketplace.Migrations
                         .IsRequired();
 
                     b.Navigation("SellerAd");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Order", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.Buyer", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.Gigs", "Gigs")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.Seller", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Buyer");
+
+                    b.Navigation("Gigs");
+
+                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
