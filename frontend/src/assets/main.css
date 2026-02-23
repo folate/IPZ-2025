@@ -31,6 +31,14 @@
   --border-heavy: 3px solid rgba(0, 0, 0, 0.18);
 }
 /* Offer Details */
+.detailsPage .Fav {
+  background-color: red;
+  color: white;
+}
+.detailsPage .NotFav {
+  background-color: var(--input-bg);
+  color: rgb(37, 26, 117);
+}
 .detailsPage .Title {
   font-size: 22px;
   font-weight: 900;

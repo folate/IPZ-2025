@@ -6,7 +6,7 @@ import offerImage from "../../../public/Placeholders/offerImage.png";
 const route = useRoute();
 const offerDetails = vue.ref(null);
 const error = vue.ref("");
-
+const isFav = vue.ref(false);
 async function fetchDetails() {
   const id = route.params.id;
   try {
@@ -19,11 +19,30 @@ async function fetchDetails() {
     error.value = err.message;
   }
 }
-
+function checkFavs() {
+  const item = localStorage.getItem("FavoritesIds");
+  const favorites = item ? JSON.parse(item) : [];
+  isFav.value = favorites.includes(route.params.id);
+}
 vue.onMounted(fetchDetails);
-
+vue.onMounted(checkFavs);
 function buyTier(tier) {
   console.log("tier bought:", tier.tierName, " ", tier.price, "zł");
+}
+function addFavorites() {
+  const id = route.params.id;
+  const item = localStorage.getItem("FavoritesIds");
+  let favorites = item ? JSON.parse(item) : [];
+
+  const index = favorites.indexOf(id);
+  if (index === -1) {
+    favorites.push(id);
+    isFav.value = true;
+  } else {
+    favorites.splice(index, 1);
+    isFav.value = false;
+  }
+  localStorage.setItem("FavoritesIds", JSON.stringify(favorites));
 }
 </script>
 <template>
@@ -32,6 +51,13 @@ function buyTier(tier) {
     <div class="detailsPage">
       <div v-if="offerDetails">
         <p class="Title">{{ offerDetails.title }}</p>
+        <button
+          v-on:click="addFavorites()"
+          id="Favorites"
+          :class="isFav ? 'Fav' : 'NotFav'"
+        >
+          Favorite!
+        </button>
         <img :src="offerImage" alt="Offer Image" />
         <p class="Description">{{ offerDetails.description }}</p>
         <p class="Username">{{ offerDetails.freelancer }}</p>
