@@ -15,6 +15,7 @@ public class MarketplaceDbContext : IdentityDbContext<User>
     public DbSet<Seller> Sellers { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<BuyerAd> BuyerAds { get; set; }
+    public DbSet<Order> Orders { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -57,5 +58,12 @@ public class MarketplaceDbContext : IdentityDbContext<User>
             .HasOne(s => s.User)
             .WithOne(u => u.Seller)
             .HasForeignKey<Seller>(s => s.UserId);
+
+        builder.Entity<Order>()
+            .HasOne(o => o.Gigs)
+            .WithMany()
+            .HasForeignKey(o => o.GigsId)
+            .HasForeignKey(o => o.SellerId)
+            .HasForeignKey(o => o.BuyerId);
     }
 }
