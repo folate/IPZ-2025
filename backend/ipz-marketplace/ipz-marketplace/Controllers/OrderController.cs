@@ -12,20 +12,21 @@ namespace ipz_marketplace.Controllers
     {
         private readonly MarketplaceDbContext _context;
         private readonly UserManager<User> _userManager;
-        public OrderController(MarketplaceDbContext context, UserManager<User> userManager) 
-        { 
+        public OrderController(MarketplaceDbContext context, UserManager<User> userManager)
+        {
             _context = context;
             _userManager = userManager;
         }
 
         [Authorize]
         [HttpPut("create")]
-        public async Task<IActionResult> createOrder([FromBody]OrderCreateDTO order)
+        public async Task<IActionResult> createOrder([FromBody] OrderCreateDTO order)
         {
             var userId = _userManager.GetUserId(User);
             var buyer = _context.Buyers.FirstOrDefault(u => u.UserId == userId);
 
-            if (buyer == null) {
+            if (buyer == null)
+            {
                 return BadRequest("Buyer not found");
             }
 
@@ -48,6 +49,21 @@ namespace ipz_marketplace.Controllers
             _context.Orders.Add(newOrder);
             await _context.SaveChangesAsync();
             return Ok("Created sucesfully " + newOrder);
+        }
+        [HttpGet("myorders")]
+        public async Task<IActionResult> GetMyOrders()
+        {
+            var userId = _userManager.GetUserId(User);
+            var buyer = _context.Buyers.FirstOrDefault(u => u.UserId == userId);
+
+            if (buyer == null)
+            {
+                return BadRequest("Buyer not found");
+            }
+
+            var orders = _context.Orders.Where(o => o.BuyerId == buyer.Id).ToList();
+            return Ok(orders);
+
         }
     }
 }
