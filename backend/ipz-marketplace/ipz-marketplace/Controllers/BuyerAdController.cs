@@ -20,7 +20,7 @@ namespace ipz_marketplace.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "Buyer")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateAd([FromBody] BuyerAdDTO adDto)
         {
@@ -66,6 +66,7 @@ namespace ipz_marketplace.Controllers
 
             return Ok(ad);
         }
+
         [HttpGet("all/{number}")]
         public async Task<IActionResult> GetFewAds([FromRoute]int number)
         {

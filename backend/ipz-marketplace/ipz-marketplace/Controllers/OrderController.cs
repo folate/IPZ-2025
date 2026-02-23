@@ -18,7 +18,7 @@ namespace ipz_marketplace.Controllers
             _userManager = userManager;
         }
 
-        [Authorize]
+        [Authorize(Roles = "Buyer")]
         [HttpPut("create")]
         public async Task<IActionResult> createOrder([FromBody] OrderCreateDTO order)
         {
@@ -50,6 +50,8 @@ namespace ipz_marketplace.Controllers
             await _context.SaveChangesAsync();
             return Ok("Created sucesfully " + newOrder);
         }
+
+        [Authorize(Roles = "Buyer")]
         [HttpGet("myorders")]
         public async Task<IActionResult> GetMyOrders()
         {
