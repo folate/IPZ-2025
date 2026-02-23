@@ -70,7 +70,6 @@ public class DatabaseSeeder
                     await userManager.AddToRoleAsync(user, "Seller");
                     var sellerAd = new SellerAd
                     {
-                        Id = 1,
                         Title = "Test Seller Ad",
                         Description = "Description of testing sellerAd.",
                         CreateDate = DateTime.UtcNow,
@@ -80,7 +79,6 @@ public class DatabaseSeeder
 
                     var gig = new Gigs
                     {
-                        Id = 1,
                         TierName = "Sample Gig",
                         TierDescription = "Description of tier.",
                         Price = 100,
@@ -92,7 +90,6 @@ public class DatabaseSeeder
 
                     var gig2 = new Gigs
                     {
-                        Id = 2,
                         TierName = "Sample Gig 2",
                         TierDescription = "Description of tier.",
                         Price = 200,
