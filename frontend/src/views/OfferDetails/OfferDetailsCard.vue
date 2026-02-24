@@ -32,8 +32,27 @@ function checkFavs() {
   isFav.value = favorites.includes(route.params.id);
 }
 
-function buyTier(tier) {
-  console.log("tier bought:", tier.tierName, " ", tier.price, "zł");
+async function buyTier(tier) {
+  console.log(tier.id, " tier bought:", tier.tierName, " ", tier.price, "zł");
+  try {
+    const res = await fetch(`/api/Order/create`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        quantity: 1,
+        price: tier.price,
+        additionalInstructions: "None",
+        gigId: tier.id,
+        sellerId: offerDetails.freelancerId,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`Błąd zakupu(${res.status})`);
+    }
+    console.log("bought succesfully");
+  } catch (err) {
+    error.value = err.message;
+  }
 }
 
 function addFavorites() {
