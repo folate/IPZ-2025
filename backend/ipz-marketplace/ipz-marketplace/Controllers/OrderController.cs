@@ -43,7 +43,7 @@ namespace ipz_marketplace.Controllers
                 BuyerId = buyer.Id,
                 Buyer = buyer,
                 SellerId = order.SellerId,
-                Seller = _context.Sellers.FirstOrDefault(u => u.Id == order.SellerId),
+                Seller = _context.Sellers.FirstOrDefault(u => u.Id == order.SellerId)
             };
 
             _context.Orders.Add(newOrder);

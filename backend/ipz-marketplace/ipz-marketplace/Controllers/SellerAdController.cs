@@ -82,6 +82,7 @@ namespace ipz_marketplace.Controllers
                     Title = a.Title,
                     Description = a.Description,
                     Freelancer = a.Freelancer.UserName,
+                    FreelancerId = a.FreelancerId,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
                         Id = g.Id,

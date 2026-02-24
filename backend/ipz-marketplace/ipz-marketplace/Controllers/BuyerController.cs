@@ -35,7 +35,6 @@ public class BuyerController : ControllerBase
                 ShippingAddress = b.ShippingAddress,
                 BillingAddress = b.BillingAddress,
                 TotalOrders = b.TotalOrders,
-                JoinedDate = b.JoinedDate,
                 LastOrderDate = b.LastOrderDate,
                 PreferredPaymentMethod = b.PreferredPaymentMethod
             })
@@ -70,7 +69,6 @@ public class BuyerController : ControllerBase
                 ShippingAddress = b.ShippingAddress,
                 BillingAddress = b.BillingAddress,
                 TotalOrders = b.TotalOrders,
-                JoinedDate = b.JoinedDate,
                 LastOrderDate = b.LastOrderDate,
                 PreferredPaymentMethod = b.PreferredPaymentMethod
             })
