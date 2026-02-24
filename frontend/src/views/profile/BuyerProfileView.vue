@@ -25,9 +25,9 @@ const fetchProfileInfo = async () => {
     const result = await response.json();
     ProfileInfo.firstName = result.firstName;
     ProfileInfo.lastName = result.lastName;
-    ProfileInfo.JoinDate = result.joinedDate.slice(0, 10) ?? "Never";
+    ProfileInfo.JoinDate = result.joinedDate?.slice(0, 10) ?? "Never";
     ProfileInfo.TotalOrders = result.totalOrders;
-    ProfileInfo.LastOrder = result.lastOrderDate.slice(0, 10) ?? "No orders";
+    ProfileInfo.LastOrder = result.lastOrderDate?.slice(0, 10) ?? "No orders";
     console.log("Success");
     emit("close");
   } catch (err) {
