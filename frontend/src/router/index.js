@@ -15,13 +15,6 @@ const router = createRouter({
       component: () => import("../views/AboutView.vue"),
     },
 
-    // Buyer ad form (vueform)
-    {
-      path: "/buyer/ad",
-      name: "buyer-ad-form",
-      component: () => import("../views/ad/BuyerAdFormView.vue"),
-    },
-
     // (jeśli masz seller/buyer profile to zostaw swoje istniejące)
     {
       path: "/seller/profile",
