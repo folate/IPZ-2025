@@ -7,6 +7,12 @@ const route = useRoute();
 const offerDetails = vue.ref(null);
 const error = vue.ref("");
 const isFav = vue.ref(false);
+
+vue.onMounted(() => {
+  fetchDetails();
+  checkFavs();
+});
+
 async function fetchDetails() {
   const id = route.params.id;
   try {
@@ -19,16 +25,17 @@ async function fetchDetails() {
     error.value = err.message;
   }
 }
+
 function checkFavs() {
   const item = localStorage.getItem("FavoritesIds");
   const favorites = item ? JSON.parse(item) : [];
   isFav.value = favorites.includes(route.params.id);
 }
-vue.onMounted(fetchDetails);
-vue.onMounted(checkFavs);
+
 function buyTier(tier) {
   console.log("tier bought:", tier.tierName, " ", tier.price, "zł");
 }
+
 function addFavorites() {
   const id = route.params.id;
   const item = localStorage.getItem("FavoritesIds");
