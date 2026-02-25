@@ -3,13 +3,14 @@ import * as vue from "vue";
 import * as yup from "yup";
 import { Form, Field, ErrorMessage, FieldArray } from "vee-validate";
 
-defineProps(["isOpen"]);
+const props = defineProps(["isOpen"]);
 const emit = defineEmits(["close"]);
+
 const categoryList = vue.ref([]);
 
 const fetchCategories = async () => {
   try {
-    const response = await fetch("/api/category");
+    const response = await fetch("/api/category", { credentials: "include" });
     if (response.ok) {
       const data = await response.json();
       categoryList.value = data;
@@ -18,9 +19,11 @@ const fetchCategories = async () => {
     console.error("Failed to fetch categories:", err);
   }
 };
+
 vue.onMounted(() => {
   fetchCategories();
 });
+
 const schema = yup.object({
   title: yup.string().required("Title is required"),
   description: yup.string().required("Description is required"),
@@ -43,20 +46,21 @@ const schema = yup.object({
 
 const onSubmit = async (values) => {
   try {
-    const gigsPayload = values.tiers.map((tier) => ({
+    const tiersPayload = values.tiers.map((tier) => ({
       TierName: tier.name,
       TierDescription: tier.description,
       Price: tier.price,
     }));
 
-    const response = await fetch("/api/sellerad/create", {
+    const response = await fetch("/api/buyerad/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         Title: values.title,
         Description: values.description,
         Category: values.categories,
-        Gigs: gigsPayload,
+        Tiers: tiersPayload,
       }),
     });
 
@@ -66,8 +70,7 @@ const onSubmit = async (values) => {
       return;
     }
 
-    const result = await response.text();
-    console.log("Success:", result);
+    await response.text();
     emit("close");
   } catch (err) {
     console.error("Submission Error:", err);
@@ -82,7 +85,7 @@ const onSubmit = async (values) => {
         <button type="button" id="cancelButton" @click="$emit('close')">
           ×
         </button>
-        <h2>Create a Listing</h2>
+        <h2>Create a Listing - Buyer Ad Form</h2>
 
         <Form
           :validation-schema="schema"

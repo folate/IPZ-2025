@@ -1,3 +1,52 @@
+<script setup>
+import { ref } from "vue";
+import { Form, Field, ErrorMessage } from "vee-validate";
+import * as yup from "yup";
+
+const props = defineProps(["isOpen"]);
+const emit = defineEmits(["close", "switchToRegister"]);
+
+const serverNotification = ref("");
+
+const schema = yup.object({
+  email: yup.string().required("Login required"),
+  password: yup.string().required("Password required"),
+  doNotLogOut: yup.boolean(),
+});
+
+const onSubmit = async (values) => {
+  serverNotification.value = "";
+
+  try {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        Login: values.email,
+        Password: values.password,
+        doNotLogOut: values.doNotLogOut,
+      }),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      if (response.status === 400 || response.status === 401) {
+        serverNotification.value = "Wrong login or password";
+      } else {
+        serverNotification.value = "An error occurred. Please try again.";
+      }
+      return;
+    }
+
+    const result = await response.text();
+    console.log("Success:", result);
+    emit("close");
+  } catch (err) {
+    console.error("Network Error:", err);
+    serverNotification.value = "Connection error.";
+  }
+};
+</script>
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="modal-overlay" @click.self="$emit('close')">
@@ -48,53 +97,3 @@
     </div>
   </Teleport>
 </template>
-
-<script setup>
-import { ref } from "vue";
-import { Form, Field, ErrorMessage } from "vee-validate";
-import * as yup from "yup";
-
-const props = defineProps(["isOpen"]);
-const emit = defineEmits(["close", "switchToRegister"]);
-
-const serverNotification = ref("");
-
-const schema = yup.object({
-  email: yup.string().required("Login required"),
-  password: yup.string().required("Password required"),
-  doNotLogOut: yup.boolean(),
-});
-
-const onSubmit = async (values) => {
-  serverNotification.value = "";
-
-  try {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Login: values.email,
-        Password: values.password,
-        doNotLogOut: values.doNotLogOut,
-      }),
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      if (response.status === 400 || response.status === 401) {
-        serverNotification.value = "Wrong login or password";
-      } else {
-        serverNotification.value = "An error occurred. Please try again.";
-      }
-      return;
-    }
-
-    const result = await response.text();
-    console.log("Success:", result);
-    emit("close");
-  } catch (err) {
-    console.error("Network Error:", err);
-    serverNotification.value = "Connection error.";
-  }
-};
-</script>

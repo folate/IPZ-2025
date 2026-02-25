@@ -1,6 +1,8 @@
 <script setup>
 import LandingHeader from "../../components/landing/LandingHeader.vue";
 import * as vue from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 vue.onMounted(() => {
   fetchProfileInfo();
   fetchOrders();
@@ -29,7 +31,6 @@ const fetchProfileInfo = async () => {
     ProfileInfo.TotalOrders = result.totalOrders;
     ProfileInfo.LastOrder = result.lastOrderDate?.slice(0, 10) ?? "No orders";
     console.log("Success");
-    emit("close");
   } catch (err) {
     console.error("Profile Error:", err);
   }
@@ -38,6 +39,9 @@ const fetchProfileInfo = async () => {
 <template>
   <main>
     <LandingHeader />
+    <button v-on:click="router.push('/buyer/profile/settings')">
+      Settings!
+    </button>
     <p>Hi {{ ProfileInfo.firstName }} {{ ProfileInfo.lastName }}!</p>
     <p>Joined date:{{ ProfileInfo.JoinDate }}</p>
     <p>Total Orders: {{ ProfileInfo.TotalOrders }}</p>

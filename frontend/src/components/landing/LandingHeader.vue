@@ -7,8 +7,10 @@ import LoginModal from "../LoginModal.vue";
 import RegisterModal from "../RegisterModal.vue";
 import { ref as VueRef } from "vue";
 import AdForm from "../AdForm.vue";
+import BuyerAdForm from "../BuyerAdForm.vue";
 
 const showAdForm = VueRef(false);
+const showBuyerAdForm = VueRef(false);
 
 const router = useRouter();
 const { isLoggedIn, initAuth, logout, hasRole } = useAuth();
@@ -61,7 +63,7 @@ const iconItems = computed(() => {
     {
       key: "upload",
       src: "/icons/upload.png",
-      onClick: () => router.push("/buyer/ad"),
+      onClick: () => (showBuyerAdForm.value = true),
     },
     {
       key: "favourites",
@@ -112,4 +114,5 @@ const iconItems = computed(() => {
 
   <RegisterModal :isOpen="showRegister" @close="closeRegisterAndRefresh" />
   <AdForm :isOpen="showAdForm" @close="showAdForm = false" />
+  <BuyerAdForm :isOpen="showBuyerAdForm" @close="showBuyerAdForm = false" />
 </template>
