@@ -30,7 +30,7 @@ namespace ipz_marketplace.Controllers
                 email.Body = builder.ToMessageBody();
                 smtpClient.Connect("live.smtp.mailtrap.io", 587, false);
 
-                smtpClient.Authenticate("api", );
+                smtpClient.Authenticate("api", "");
                 smtpClient.Send(email);
                 smtpClient.Disconnect(true);
             }
