@@ -326,6 +326,35 @@ namespace ipz_marketplace.Migrations
                     b.ToTable("Orders");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.Revision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Revisions");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
                 {
                     b.Property<int>("Id")
@@ -601,6 +630,17 @@ namespace ipz_marketplace.Migrations
                     b.Navigation("Gigs");
 
                     b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Revision", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>

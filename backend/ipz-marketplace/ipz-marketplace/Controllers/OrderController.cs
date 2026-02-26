@@ -47,6 +47,8 @@ namespace ipz_marketplace.Controllers
             };
 
             _context.Orders.Add(newOrder);
+            buyer.TotalOrders += 1;
+            _context.Buyers.Update(buyer);
             await _context.SaveChangesAsync();
             return Ok("Created sucesfully " + newOrder);
         }

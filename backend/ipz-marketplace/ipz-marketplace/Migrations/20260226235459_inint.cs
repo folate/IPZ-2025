@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ipz_marketplace.Migrations
 {
     /// <inheritdoc />
-    public partial class nitn : Migration
+    public partial class inint : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -317,6 +317,28 @@ namespace ipz_marketplace.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Revisions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Reason = table.Column<string>(type: "text", nullable: false),
+                    RequestDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    OrderId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Revisions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Revisions_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -384,6 +406,11 @@ namespace ipz_marketplace.Migrations
                 name: "IX_Orders_SellerId",
                 table: "Orders",
                 column: "SellerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Revisions_OrderId",
+                table: "Revisions",
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SellerAds_FreelancerId",
@@ -454,10 +481,13 @@ namespace ipz_marketplace.Migrations
                 name: "Categories");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "Revisions");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "Buyers");
