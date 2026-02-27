@@ -1,16 +1,20 @@
 <script setup>
 import * as vue from "vue";
 import * as yup from "yup";
-import { Form, Field, ErrorMessage, FieldArray } from "vee-validate";
+import { Form, Field, ErrorMessage } from "vee-validate";
 
 const props = defineProps(["isOpen"]);
 const emit = defineEmits(["close"]);
 
 const categoryList = vue.ref([]);
+const submitError = vue.ref("");
+const isSubmitting = vue.ref(false);
 
 const fetchCategories = async () => {
   try {
-    const response = await fetch("/api/category", { credentials: "include" });
+    const response = await fetch("/api/category", {
+      credentials: "include",
+    });
     if (response.ok) {
       const data = await response.json();
       categoryList.value = data;
@@ -24,35 +28,50 @@ vue.onMounted(() => {
   fetchCategories();
 });
 
+const today = new Date();
+const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+  today.getDate(),
+).padStart(2, "0")}`;
+
 const schema = yup.object({
-  title: yup.string().required("Title is required"),
-  description: yup.string().required("Description is required"),
+  title: yup
+    .string()
+    .transform((v) => (typeof v === "string" ? v.trim() : v))
+    .required("Title is required")
+    .min(3, "Title must be at least 3 characters"),
+
+  description: yup
+    .string()
+    .transform((v) => (typeof v === "string" ? v.trim() : v))
+    .required("Description is required")
+    .min(10, "Description must be at least 10 characters"),
+
   categories: yup.string().required("Please select a category"),
-  tiers: yup
-    .array()
-    .of(
-      yup.object({
-        name: yup.string().required("Tier Name required"),
-        price: yup
-          .number()
-          .typeError("Price must be a number")
-          .required("Price required")
-          .positive("Price must be positive"),
-        description: yup.string().required("Tier Description required"),
-      }),
-    )
-    .min(1, "At least one tier is required"),
+
+  budget: yup
+    .number()
+    .typeError("Budget must be a number")
+    .required("Budget is required")
+    .min(0, "Budget cannot be negative"),
+
+  deadline: yup
+    .date()
+    .typeError("Deadline is required")
+    .required("Deadline is required")
+    .min(new Date(todayStr), "Deadline must be today or later"),
 });
 
-const onSubmit = async (values) => {
-  try {
-    const tiersPayload = values.tiers.map((tier) => ({
-      TierName: tier.name,
-      TierDescription: tier.description,
-      Price: tier.price,
-    }));
+function toIsoFromDateInput(dateStr) {
+  const d = new Date(`${dateStr}T23:59:59`);
+  return d.toISOString();
+}
 
-    const response = await fetch("/api/buyerad/create", {
+const onSubmit = async (values) => {
+  submitError.value = "";
+  isSubmitting.value = true;
+
+  try {
+    const response = await fetch("/api/BuyerAd/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -60,20 +79,24 @@ const onSubmit = async (values) => {
         Title: values.title,
         Description: values.description,
         Category: values.categories,
-        Tiers: tiersPayload,
+        Budget: Number(values.budget),
+        Deadline: toIsoFromDateInput(values.deadline),
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Server Error:", response.status, errorText);
+      submitError.value = `Server error (${response.status}): ${errorText}`;
       return;
     }
 
     await response.text();
+    window.dispatchEvent(new Event("buyerad:created"));
     emit("close");
   } catch (err) {
-    console.error("Submission Error:", err);
+    submitError.value = "Submission error (network problem).";
+  } finally {
+    isSubmitting.value = false;
   }
 };
 </script>
@@ -85,13 +108,19 @@ const onSubmit = async (values) => {
         <button type="button" id="cancelButton" @click="$emit('close')">
           ×
         </button>
+
         <h2>Create a Listing - Buyer Ad Form</h2>
 
         <Form
           :validation-schema="schema"
-          :initial-values="{ tiers: [{ name: '', price: 0, description: '' }] }"
+          :initial-values="{
+            title: '',
+            description: '',
+            categories: '',
+            budget: 0,
+            deadline: todayStr,
+          }"
           @submit="onSubmit"
-          v-slot="{ values }"
         >
           <div id="fields-flex">
             <div class="field-group">
@@ -118,76 +147,31 @@ const onSubmit = async (values) => {
               <ErrorMessage name="categories" class="error-text" />
             </div>
 
-            <hr />
-            <h3>Tiers</h3>
+            <div class="field-group">
+              <Field
+                name="budget"
+                type="number"
+                placeholder="Budget"
+                min="0"
+                step="1"
+              />
+              <ErrorMessage name="budget" class="error-text" />
+            </div>
 
-            <FieldArray name="tiers" v-slot="{ fields, push, remove }">
-              <div
-                v-for="(field, index) in fields"
-                :key="field.key"
-                class="tier-section"
-              >
-                <h4>Tier {{ index + 1 }}</h4>
-
-                <div class="field-group">
-                  <Field
-                    :name="`tiers[${index}].name`"
-                    placeholder="Tier Name"
-                  />
-                  <ErrorMessage
-                    :name="`tiers[${index}].name`"
-                    class="error-text"
-                  />
-                </div>
-
-                <div class="field-group">
-                  <Field
-                    :name="`tiers[${index}].price`"
-                    type="number"
-                    placeholder="Price"
-                    min="0"
-                  />
-                  <ErrorMessage
-                    :name="`tiers[${index}].price`"
-                    class="error-text"
-                  />
-                </div>
-
-                <div class="field-group">
-                  <Field
-                    :name="`tiers[${index}].description`"
-                    placeholder="Tier Description"
-                  />
-                  <ErrorMessage
-                    :name="`tiers[${index}].description`"
-                    class="error-text"
-                  />
-                </div>
-
-                <button
-                  v-if="index !== 0"
-                  type="button"
-                  id="submit"
-                  class="remove-btn"
-                  @click="remove(index)"
-                >
-                  Remove Tier
-                </button>
-              </div>
-
-              <button
-                type="button"
-                class="add-btn"
-                id="submit"
-                @click="push({ name: '', price: 0, description: '' })"
-              >
-                + Add Tier
-              </button>
-            </FieldArray>
+            <div class="field-group">
+              <Field name="deadline" type="date" :min="todayStr" />
+              <ErrorMessage name="deadline" class="error-text" />
+            </div>
           </div>
 
+          <p v-if="submitError" class="error-text">
+            {{ submitError }}
+          </p>
+
           <div id="buttons">
-            <button type="submit" id="submit">Submit Listing</button>
+            <button type="submit" id="submit" :disabled="isSubmitting">
+              Submit Listing
+            </button>
           </div>
         </Form>
       </div>

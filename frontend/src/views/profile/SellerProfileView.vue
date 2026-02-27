@@ -2,6 +2,9 @@
 import { ref, computed, onMounted } from "vue";
 import LandingHeader from "@/components/landing/LandingHeader.vue";
 import OfferCard from "@/components/landing/OfferCard.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const activeTab = ref("offers");
 const loading = ref(false);
@@ -178,13 +181,9 @@ onMounted(async () => {
                   {{ c.name }}
                 </button>
 
-                <button
-                  type="button"
-                  class="catBtn"
-                  :class="{ active: selectedCategory === 'orders' }"
-                  @click="selectCat('orders')"
-                >
-                  orders
+                <!-- JEDYNY SETTINGS (ma otwierać buyer settings) -->
+                <button v-on:click="router.push('/buyer/profile/settings')">
+                  Settings!
                 </button>
               </aside>
 
