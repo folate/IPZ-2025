@@ -50,14 +50,26 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="offersSection">
-    <h2 class="offersTitle">Oferty</h2>
+  <section class="container mx-auto px-4 sm:px-6 py-12 sm:py-16 w-full">
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        Polecane Oferty
+      </h2>
+    </div>
 
-    <p v-if="loading" class="offersInfo">Ładowanie...</p>
-    <p v-else-if="error" class="offersError">{{ error }}</p>
-    <p v-else-if="offers.length === 0" class="offersInfo">Brak ofert.</p>
+    <div v-if="loading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>
+    </div>
+    
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-6 rounded-2xl text-center border border-red-100 dark:border-red-900/30">
+      <p class="font-medium">{{ error }}</p>
+    </div>
+    
+    <div v-else-if="offers.length === 0" class="bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center rounded-2xl border border-zinc-200 dark:border-zinc-800">
+      <p class="text-zinc-500 dark:text-zinc-400 text-lg">Brak dostępnych ofert w tym momencie.</p>
+    </div>
 
-    <div v-else class="offersGrid">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <OfferCard v-for="o in offers" :key="o.id" :offer="o" />
     </div>
   </section>

@@ -1,58 +1,71 @@
 <script setup>
 import { ref } from "vue"
 import { useRouter } from "vue-router"
+import { Search, Heart, MessageCircle, Star, TriangleAlert } from "lucide-vue-next"
+
 import LandingHeader from "../../components/landing/LandingHeader.vue"
 import Container from "../../components/ui/Container.vue"
+
+import { Card, CardContent } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 const router = useRouter()
 
 const tab = ref("offers") // offers | reviews | description
 
 const tabs = [
-  { key: "offers", label: "offers" },
-  { key: "reviews", label: "reviews" },
-  { key: "description", label: "description" },
+  { key: "offers", label: "Oferty" },
+  { key: "reviews", label: "Opinie" },
+  { key: "description", label: "O mnie" },
 ]
 
 //mocki
 const seller = {
-  name: "NAME",
+  name: "Jan Kowalski",
   rating: 3,
-  description: ["Lorem ipsum", "Lorem ipsum", "", "Lorem ipsum"],
+  description: ["Doświadczony projektant stron internetowych i aplikacji mobilnych.", "Specjalizuję się w tworzeniu nowoczesnych interfejsów.", "", "Zapraszam do współpracy!"],
 }
 
 const reviewStats = {
   total: 123,
   avg: 4.2,
   stars: [
-    { stars: 1, count: 12 },
-    { stars: 2, count: 9 },
-    { stars: 3, count: 20 },
-    { stars: 4, count: 35 },
     { stars: 5, count: 47 },
+    { stars: 4, count: 35 },
+    { stars: 3, count: 20 },
+    { stars: 2, count: 9 },
+    { stars: 1, count: 12 },
   ],
 }
 
 const reviews = [
-  { id: 1, user: "username", stars: 3, text: "Lorem ipsum" },
-  { id: 2, user: "username", stars: 3, text: "Lorem ipsum" },
-  { id: 3, user: "username", stars: 3, text: "Lorem ipsum" },
+  { id: 1, user: "Kasia", stars: 5, text: "Świetna robota, szybki czas realizacji!" },
+  { id: 2, user: "Tomek", stars: 4, text: "Dobry kontakt, ale musiałem poprosić o poprawki." },
+  { id: 3, user: "Michał", stars: 3, text: "Projektowanie mogłoby być trochę bardziej kreatywne." },
 ]
 
-const leftMenu = ["all", "cat 1", "cat 2", "cat 3", "orders"]
+const leftMenu = [
+  { key: "all", label: "Wszystko" },
+  { key: "cat 1", label: "Kategoria 1" },
+  { key: "cat 2", label: "Kategoria 2" },
+  { key: "cat 3", label: "Kategoria 3" },
+  { key: "orders", label: "Moje zamówienia" }
+]
 
 const activeLeft = ref("all")
 
 //mock Orders
 const orders = [
-  { id: 101, user: "username1", title: "Order title 1" },
-  { id: 102, user: "username2", title: "Order title 2" },
+  { id: 101, user: "username1", title: "Zaprojektowanie logo 1" },
+  { id: 102, user: "username2", title: "Zaprojektowanie logo 2" },
 ]
 
 function onReport()
 {
-  //Report
-  alert("report")
+  alert("Reported user")
 }
 
 function goBuyerProfile()
@@ -75,7 +88,6 @@ const isFavourite = ref(false)
 function onToggleFavourite()
 {
   isFavourite.value = !isFavourite.value
-  console.log("toggle favourite seller:", isFavourite.value)
 }
 
 function onChatClick()
@@ -87,629 +99,209 @@ const searchQuery = ref("")
 </script>
 
 <template>
-  <div class="page">
+  <div class="min-h-svh bg-zinc-50 dark:bg-zinc-950 pb-20">
     <LandingHeader />
 
-    <div class="banner">
-      <div class="bannerText">BANNER</div>
+    <!-- Banner -->
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
+      <div class="h-48 md:h-64 w-full bg-zinc-800 dark:bg-zinc-900 rounded-2xl relative overflow-hidden flex items-center shadow-lg">
+        <div class="absolute inset-0 bg-teal-900/40 mix-blend-multiply"></div>
+        <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+        <h1 class="absolute left-8 md:left-12 text-6xl md:text-8xl font-black text-white/20 tracking-widest pointer-events-none uppercase">Banner</h1>
+      </div>
     </div>
 
     <Container>
-      <div class="topRow">
-        <div class="sellerMeta">
-          <div class="avatarBox"></div>
-
-          <div class="sellerText">
-            <div class="sellerName">{{ seller.name }}</div>
-            <div class="sellerStars" aria-label="rating">
-              <span v-for="i in 5" :key="i" :class="{ on: i <= seller.rating }">★</span>
+      <!-- Top Meta Row -->
+      <div class="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        
+        <!-- Avatar & Name -->
+        <div class="flex items-center gap-5">
+          <Avatar class="h-20 w-20 md:h-24 md:w-24 border-4 border-zinc-100 dark:border-zinc-900 shadow-xl bg-teal-50 dark:bg-teal-900/20">
+            <AvatarImage src="" alt="Seller Avatar" />
+            <AvatarFallback class="text-3xl text-teal-700 dark:text-teal-400 font-bold bg-zinc-100 dark:bg-zinc-800">
+              {{ seller.name.charAt(0) }}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div class="flex flex-col">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">
+              {{ seller.name }}
+            </h1>
+            <div class="flex items-center gap-1 mt-1 text-teal-600 dark:text-teal-400">
+              <Star v-for="i in 5" :key="i" class="h-4 w-4 md:h-5 md:w-5" :class="i <= seller.rating ? 'fill-current' : 'text-zinc-300 dark:text-zinc-700'" />
             </div>
           </div>
         </div>
 
-        <div class="topRight">
-          <div class="searchMini">
-            <input
-              v-model="searchQuery"
-              class="searchInput"
-              type="text"
-              placeholder=""
+        <!-- Actions & Search -->
+        <div class="flex items-center gap-3">
+          <div class="relative w-full max-w-xs md:w-64">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+            <Input 
+              v-model="searchQuery" 
+              placeholder="Szukaj..." 
+              class="pl-9 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 rounded-xl h-11"
             />
-            <span class="searchLens"></span>
           </div>
 
-          <button class="roundIconBtn" type="button" @click="onToggleFavourite">
-            <img
-              class="roundIconImg"
-              src="/icons/favourites_icon.png"
-              alt="favourites"
-              :class="{ favOn: isFavourite }"
-            />
-          </button>
+          <Button variant="outline" size="icon" @click="onToggleFavourite" 
+                  class="h-11 w-11 rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0">
+            <Heart class="h-5 w-5 transition-colors" :class="isFavourite ? 'fill-rose-500 text-rose-500' : 'text-zinc-500 dark:text-zinc-400'" />
+          </Button>
 
-          <button class="roundIconBtn" type="button" @click="onChatClick">
-            <img class="roundIconImg" src="/icons/chat.png" alt="chat" />
-          </button>
+          <Button variant="outline" size="icon" @click="onChatClick" 
+                  class="h-11 w-11 rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0">
+            <MessageCircle class="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
+          </Button>
         </div>
       </div>
 
-      <div class="tabs">
-        <button
-          v-for="t in tabs"
-          :key="t.key"
-          class="tab"
-          type="button"
-          :class="{ active: tab === t.key }"
-          @click="tab = t.key"
-        >
-          {{ t.label }}
-        </button>
-      </div>
-
-      <div v-if="tab === 'description'" class="desc">
-        <div v-for="(line, idx) in seller.description" :key="idx" class="descLine">
-          {{ line }}
-        </div>
-      </div>
-
-      <div v-else-if="tab === 'offers'" class="offersLayout">
-        <aside class="leftMenu">
-          <button
-            v-for="m in leftMenu"
-            :key="m"
-            class="leftItem"
-            type="button"
-            :class="{ active: activeLeft === m }"
-            @click="activeLeft = m"
-          >
-            {{ m }}
-          </button>
-
-          <!-- report w prostokącie -->
-          <button class="reportBtn" type="button" @click="onReport">
-            report
-          </button>
-        </aside>
-
-        <section class="offersRight">
-
-          <div v-if="activeLeft === 'orders'" class="ordersWrap">
-            <div class="ordersTitle">Orders</div>
-
-            <button
-              v-for="o in orders"
-              :key="o.id"
-              class="orderCard"
-              type="button"
-              @click="onOrderClick(o)"
+      <!-- Main Content / Tabs -->
+      <div class="mt-8">
+        <Tabs defaultValue="offers" v-model="tab" class="w-full">
+          <TabsList class="w-full justify-start h-auto bg-transparent border-b border-zinc-200 dark:border-zinc-800 p-0 rounded-none gap-8">
+            <TabsTrigger 
+              v-for="t in tabs" 
+              :key="t.key" 
+              :value="t.key"
+              class="rounded-none border-b-2 border-transparent px-0 py-3 text-lg font-semibold text-zinc-500 dark:text-zinc-400 data-[state=active]:border-teal-600 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-none data-[state=active]:bg-transparent focus-visible:ring-0"
             >
-              <div class="orderBox"></div>
+              {{ t.label }}
+            </TabsTrigger>
+          </TabsList>
 
-              <div class="orderText">
-                <div class="orderUser">{{ o.user }}</div>
-                <div class="orderName">{{ o.title }}</div>
-              </div>
-            </button>
-          </div>
+          <!-- Description Tab -->
+          <TabsContent value="description" class="pt-8 flex flex-col gap-2">
+             <p v-for="(line, idx) in seller.description" :key="idx" class="text-xl md:text-2xl font-medium text-zinc-600 dark:text-zinc-300">
+               {{ line }}
+             </p>
+          </TabsContent>
 
-          <template v-else>
-            <div class="topOffersRow">
-              <div class="topOffersTitle">Top offers</div>
+          <!-- Offers Tab -->
+          <TabsContent value="offers" class="pt-8">
+            <div class="flex flex-col md:flex-row gap-8">
+              
+              <!-- Left Sidebar -->
+              <aside class="w-full md:w-56 flex flex-col gap-1 md:border-r border-zinc-200 dark:border-zinc-800 md:pr-6 shrink-0">
+                <button
+                  v-for="m in leftMenu"
+                  :key="m.key"
+                  class="text-left py-2 px-3 rounded-lg text-lg font-semibold transition-colors"
+                  :class="activeLeft === m.key ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'"
+                  @click="activeLeft = m.key"
+                >
+                  {{ m.label }}
+                </button>
 
-              <div class="miniRow">
-                <div v-for="i in 5" :key="i" class="miniCol">
-                  <button class="miniCard" type="button" @click="onServiceClick"></button>
-                  <div class="miniLabel">title</div>
+                <div class="mt-8">
+                  <Button variant="outline" class="w-full border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" @click="onReport">
+                    <TriangleAlert class="h-4 w-4 mr-2" />
+                    Zgłoś profil
+                  </Button>
                 </div>
-              </div>
-            </div>
+              </aside>
 
-            <div class="allTitle">All</div>
+              <!-- Main Offers Area -->
+              <section class="flex-1">
+                <div v-if="activeLeft === 'orders'" class="flex flex-col gap-4">
+                  <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">Moje zamówienia</h2>
+                  
+                  <button v-for="o in orders" :key="o.id" class="w-full flex items-center gap-5 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-teal-500/30 hover:shadow-md transition-all text-left" @click="onOrderClick(o)">
+                    <div class="h-16 w-20 shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
+                      <span class="text-xs text-zinc-400 font-medium">Image</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ o.title }}</span>
+                      <span class="text-sm text-zinc-500 dark:text-zinc-400">od <span class="text-teal-600 dark:text-teal-400 font-medium">{{ o.user }}</span></span>
+                    </div>
+                  </button>
+                </div>
 
-            <div class="bigGrid">
-              <div v-for="i in 5" :key="i" class="bigCol">
-                <button class="bigCard" type="button" @click="onServiceClick"></button>
-                <div class="bigLabel">title</div>
-              </div>
+                <div v-else class="flex flex-col gap-10">
+                  <!-- Top Offers Row -->
+                  <div>
+                    <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Najpopularniejsze oferty</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      
+                      <div v-for="i in 5" :key="i" class="flex flex-col gap-2">
+                        <button class="w-full aspect-video bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-teal-500/50 hover:shadow-lg transition-all" @click="onServiceClick"></button>
+                        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Przykładowy tytuł</span>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- All Offers Grid -->
+                  <div>
+                    <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Wszystkie usługi</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      
+                      <div v-for="i in 5" :key="i" class="flex flex-col gap-2">
+                        <button class="w-full aspect-[4/3] bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-teal-500/50 hover:shadow-lg transition-all" @click="onServiceClick"></button>
+                        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Usługa {{ i }}</span>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </section>
+
             </div>
-          </template>
-        </section>
+          </TabsContent>
+
+          <!-- Reviews Tab -->
+          <TabsContent value="reviews" class="pt-8">
+            <div class="flex flex-col md:flex-row gap-10 md:gap-16">
+              
+              <!-- Review List -->
+              <section class="flex-1 flex flex-col gap-8">
+                <div v-for="r in reviews" :key="r.id" class="flex gap-4">
+                  <Avatar class="h-12 w-12 border border-zinc-200 dark:border-zinc-800 shrink-0">
+                    <AvatarFallback class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-medium">{{ r.user.charAt(0) }}</AvatarFallback>
+                  </Avatar>
+                  
+                  <div class="flex flex-col gap-1 pt-1">
+                    <div class="flex items-center gap-1 text-teal-600 dark:text-teal-400">
+                      <Star v-for="i in 5" :key="i" class="h-3.5 w-3.5" :class="i <= r.stars ? 'fill-current' : 'text-zinc-300 dark:text-zinc-700'" />
+                    </div>
+                    <p class="text-lg md:text-xl font-bold text-zinc-800 dark:text-zinc-200 leading-snug mt-1">
+                      {{ r.text }}
+                    </p>
+                    <span class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mt-1">{{ r.user }}</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Review Stats Sidebar -->
+              <aside class="md:w-72 flex flex-col gap-6 md:border-l border-zinc-200 dark:border-zinc-800 md:pl-10 shrink-0">
+                
+                <div class="flex flex-col">
+                  <span class="text-sm uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400 mb-1">Liczba opinii</span>
+                  <span class="text-3xl font-black text-zinc-900 dark:text-zinc-50">{{ reviewStats.total }}</span>
+                </div>
+
+                <div class="flex flex-col">
+                  <span class="text-sm uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400 mb-1">Średnia ocena</span>
+                  <span class="text-4xl font-black text-teal-600 dark:text-teal-400">{{ reviewStats.avg }}</span>
+                </div>
+
+                <div class="flex flex-col gap-2 mt-2">
+                  <div v-for="s in reviewStats.stars" :key="s.stars" class="flex items-center gap-3">
+                    <div class="flex items-center text-zinc-400 w-24">
+                      <Star v-for="i in 5" :key="i" class="h-4 w-4" :class="i <= s.stars ? 'fill-current text-zinc-600 dark:text-zinc-400' : 'text-zinc-200 dark:text-zinc-800'" />
+                    </div>
+                    <span class="text-sm font-semibold text-zinc-600 dark:text-zinc-300">{{ s.count }}</span>
+                  </div>
+                </div>
+
+              </aside>
+            </div>
+          </TabsContent>
+
+        </Tabs>
       </div>
 
-      <div v-else class="reviewsLayout">
-        <section class="reviewsLeft">
-          <div v-for="r in reviews" :key="r.id" class="reviewRow">
-            <div class="reviewAvatar"></div>
-            <div class="reviewContent">
-              <div class="reviewStars">
-                <span v-for="i in 5" :key="i" :class="{ on: i <= r.stars }">★</span>
-              </div>
-              <div class="reviewText">{{ r.text }}</div>
-              <div class="reviewUser">{{ r.user }}</div>
-            </div>
-          </div>
-        </section>
-
-        <aside class="reviewsStats">
-          <div class="statTitle">number of reviews</div>
-          <div class="statVal">{{ reviewStats.total }}</div>
-
-          <div class="statTitle">average</div>
-          <div class="statVal">{{ reviewStats.avg }}</div>
-
-          <div class="starsBreakdown">
-            <div v-for="s in reviewStats.stars" :key="s.stars" class="starLine">
-              <span class="starIcons">
-                <span v-for="i in s.stars" :key="i">★</span>
-              </span>
-              <span class="starCount">{{ s.stars }}</span>
-            </div>
-          </div>
-        </aside>
-      </div>
     </Container>
   </div>
 </template>
-
-<style scoped>
-.page
-{
-  background: #f0f0f0;
-  min-height: 100vh;
-}
-
-.banner
-{
-  margin: 0 auto;
-  max-width: 1200px;
-  height: 200px;
-  background: #4d4d4d;
-  border-radius: 8px;
-  margin-top: 18px;
-  position: relative;
-}
-.bannerText
-{
-  position: absolute;
-  left: 40px;
-  top: 35px;
-  font-size: 120px;
-  font-weight: 900;
-  color: rgba(255,255,255,.25);
-  letter-spacing: 4px;
-}
-
-.topRow
-{
-  margin-top: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.sellerMeta
-{
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.avatarBox
-{
-  width: 70px;
-  height: 70px;
-  border-radius: 6px;
-  background: #9a9a9a;
-}
-.sellerName
-{
-  font-size: 34px;
-  font-weight: 900;
-  color: rgba(0,0,0,.45);
-}
-.sellerStars
-{
-  margin-top: 4px;
-  font-size: 18px;
-  letter-spacing: 6px;
-}
-.sellerStars span{ color: rgba(0,0,0,.20); }
-.sellerStars span.on{ color: rgba(0,0,0,.35); }
-
-.topRight
-{
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.searchMini
-{
-  width: 220px;
-  height: 44px;
-  border-radius: 6px;
-  background: #f2f2f2;
-  border: 2px solid rgba(0,0,0,.25);
-  position: relative;
-  overflow: hidden;
-}
-.searchInput
-{
-  width: 100%;
-  height: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 0 44px 0 12px;
-  font-size: 16px;
-  font-weight: 700;
-  color: rgba(0,0,0,.55);
-}
-.searchLens
-{
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  border: 3px solid rgba(0,0,0,.35);
-  pointer-events: none;
-}
-.searchLens:after
-{
-  content: "";
-  position: absolute;
-  width: 10px;
-  height: 3px;
-  background: rgba(0,0,0,.35);
-  right: -8px;
-  bottom: -2px;
-  transform: rotate(45deg);
-  border-radius: 3px;
-}
-.roundIconBtn
-{
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background: #d7d7d7;
-  display: grid;
-  place-items: center;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
-.roundIconBtn:hover
-{
-  filter: brightness(.97);
-}
-.roundIconImg
-{
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-.favOn
-{
-  filter: contrast(1.2);
-}
-
-.tabs
-{
-  margin-top: 16px;
-  display: flex;
-  gap: 18px;
-  align-items: center;
-}
-.tab
-{
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  font-size: 26px;
-  font-weight: 800;
-  color: rgba(0,0,0,.35);
-}
-.tab.active
-{
-  color: rgba(0,0,0,.55);
-  text-decoration: underline;
-}
-
-.desc
-{
-  margin-top: 18px;
-  padding-bottom: 40px;
-}
-.descLine
-{
-  font-size: 44px;
-  font-weight: 700;
-  color: rgba(0,0,0,.22);
-  line-height: 1.1;
-}
-
-.offersLayout
-{
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: 170px 1fr;
-  gap: 18px;
-  padding-bottom: 40px;
-}
-.leftMenu
-{
-  border-right: 3px solid rgba(0,0,0,.20);
-  padding-right: 14px;
-}
-.leftItem
-{
-  display: block;
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 22px;
-  font-weight: 800;
-  color: rgba(0,0,0,.35);
-  padding: 6px 0;
-}
-.leftItem.active
-{
-  color: rgba(0,0,0,.55);
-  text-decoration: underline;
-}
-
-.reportBtn
-{
-  margin-top: 14px;
-  width: 140px;
-  height: 44px;
-
-  border-radius: 6px;
-  border: 2px solid rgba(0,0,0,.35);
-  background: transparent;
-
-  font-size: 22px;
-  font-weight: 900;
-  color: rgba(0,0,0,.45);
-
-  cursor: pointer;
-  text-align: center;
-}
-
-.reportBtn:hover
-{
-  background: rgba(0,0,0,.05);
-}
-
-.topOffersRow
-{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-.topOffersTitle
-{
-  font-size: 30px;
-  font-weight: 900;
-  color: rgba(0,0,0,.45);
-}
-
-.miniRow
-{
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-}
-.miniCol
-{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-.miniCard
-{
-  height: 70px;
-  border-radius: 6px;
-  border: 3px solid rgba(0,0,0,.25);
-  background: #f5f5f5;
-  cursor: pointer;
-  padding: 0;
-}
-.miniCard:hover
-{
-  background: #eeeeee;
-}
-.miniLabel
-{
-  font-size: 22px;
-  font-weight: 900;
-  color: rgba(0,0,0,.35);
-}
-
-.allTitle
-{
-  margin-top: 8px;
-  font-size: 30px;
-  font-weight: 900;
-  color: rgba(0,0,0,.45);
-}
-
-.bigGrid
-{
-  margin-top: 10px;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-}
-.bigCol
-{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-.bigCard
-{
-  height: 90px;
-  border-radius: 6px;
-  border: 3px solid rgba(0,0,0,.25);
-  background: #f5f5f5;
-  cursor: pointer;
-  padding: 0;
-}
-.bigCard:hover
-{
-  background: #eeeeee;
-}
-.bigLabel
-{
-  font-size: 22px;
-  font-weight: 900;
-  color: rgba(0,0,0,.35);
-}
-
-.ordersWrap
-{
-  display: grid;
-  gap: 14px;
-}
-
-.ordersTitle
-{
-  font-size: 30px;
-  font-weight: 900;
-  color: rgba(0,0,0,.45);
-}
-
-.orderCard
-{
-  display: flex;
-  align-items: center;
-  gap: 14px;
-
-  width: 100%;
-  border-radius: 10px;
-  border: 3px solid rgba(0,0,0,.18);
-  background: #f5f5f5;
-
-  padding: 14px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.orderCard:hover
-{
-  background: #eeeeee;
-}
-
-.orderBox
-{
-  width: 70px;
-  height: 50px;
-  border-radius: 6px;
-  background: #d7d7d7;
-  border: 2px solid rgba(0,0,0,.18);
-  flex: 0 0 auto;
-}
-
-.orderUser
-{
-  font-size: 22px;
-  font-weight: 900;
-  color: rgba(0,0,0,.45);
-}
-
-.orderName
-{
-  margin-top: 4px;
-  font-size: 18px;
-  font-weight: 800;
-  color: rgba(0,0,0,.30);
-}
-
-.reviewsLayout
-{
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 24px;
-  padding-bottom: 40px;
-}
-.reviewRow
-{
-  display: grid;
-  grid-template-columns: 70px 1fr;
-  gap: 16px;
-  margin-bottom: 26px;
-}
-.reviewAvatar
-{
-  width: 70px;
-  height: 70px;
-  border-radius: 6px;
-  border: 3px solid rgba(0,0,0,.25);
-  background: #f5f5f5;
-}
-.reviewStars
-{
-  font-size: 20px;
-  letter-spacing: 6px;
-}
-.reviewStars span{ color: rgba(0,0,0,.20); }
-.reviewStars span.on{ color: rgba(0,0,0,.35); }
-.reviewText
-{
-  font-size: 34px;
-  font-weight: 800;
-  color: rgba(0,0,0,.25);
-  line-height: 1.1;
-}
-.reviewUser
-{
-  margin-top: 6px;
-  font-size: 20px;
-  font-weight: 800;
-  color: rgba(0,0,0,.35);
-}
-.reviewsStats
-{
-  border-left: 3px solid rgba(0,0,0,.20);
-  padding-left: 18px;
-}
-.statTitle
-{
-  font-size: 22px;
-  font-weight: 900;
-  color: rgba(0,0,0,.35);
-  margin-top: 10px;
-}
-.statVal
-{
-  font-size: 32px;
-  font-weight: 900;
-  color: rgba(0,0,0,.45);
-}
-.starsBreakdown
-{
-  margin-top: 12px;
-}
-.starLine
-{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 8px 0;
-  color: rgba(0,0,0,.35);
-  font-weight: 900;
-}
-.starIcons
-{
-  min-width: 90px;
-  letter-spacing: 4px;
-}
-</style>
