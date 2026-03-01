@@ -76,7 +76,7 @@ namespace ipz_marketplace.Controllers
                 return Unauthorized("userId went wrong!");
             }
 
-            List<BuyerAd> ads = _context.BuyerAds.Where(a => a.Buyer.Id != userId).Take(number).ToList();
+            List<BuyerAd> ads = _context.BuyerAds.Where(a => a.Buyer.Id == userId).Take(number).ToList();
 
             return Ok(ads);
         }
