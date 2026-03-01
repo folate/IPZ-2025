@@ -36,6 +36,11 @@ const router = createRouter({
       component: OfferDetailsCard,
       props: true,
     },
+    {
+      path: "/request/:id",
+      name: "BuyerAdDetails",
+      component: () => import("../views/OfferDetails/BuyerAdDetailsView.vue"),
+    },
     //liked
     {
       path: "/liked",

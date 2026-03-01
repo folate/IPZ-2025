@@ -22,10 +22,12 @@ async function loadOffers() {
   try {
     const res = await fetch(`/api/SellerAd/all/${props.limit}`, {
       credentials: "include",
+      cache: "no-store",
     });
 
     if (!res.ok) {
-      error.value = `Nie udało się pobrać ofert (${res.status}).`;
+      const text = await res.text().catch(() => "");
+      error.value = `Nie udało się pobrać ofert (${res.status}). ${text}`;
       offers.value = [];
       return;
     }
@@ -45,7 +47,7 @@ async function loadBuyerAds() {
   buyerError.value = "";
 
   try {
-    const res = await fetch(`/api/BuyerAd/all/10?t=${Date.now()}`, {
+    const res = await fetch(`/api/BuyerAd/all/${props.limit}?t=${Date.now()}`, {
       credentials: "include",
       cache: "no-store",
       headers: {
@@ -57,14 +59,8 @@ async function loadBuyerAds() {
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      buyerError.value = `Nie udało się pobrać zleceń (${res.status}). ${String(text).slice(0, 120)}`;
-      return; // ważne: NIE czyścimy buyerAds
-    }
-
-    const contentType = res.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      const text = await res.text().catch(() => "");
-      buyerError.value = `Zła odpowiedź z API (nie-JSON). ${String(text).slice(0, 120)}`;
+      buyerError.value = `Nie udało się pobrać zleceń (${res.status}). ${text}`;
+      buyerAds.value = [];
       return;
     }
 
@@ -72,6 +68,7 @@ async function loadBuyerAds() {
     buyerAds.value = Array.isArray(data) ? data : [];
   } catch {
     buyerError.value = "Błąd sieci przy pobieraniu zleceń klientów.";
+    buyerAds.value = [];
   } finally {
     buyerLoading.value = false;
   }
@@ -113,16 +110,16 @@ onUnmounted(() => {
       </RouterLink>
     </div>
 
-    <h2 class="offersTitle" style="margin-top: 50px">Zlecenia klientów</h2>
+    <h2 class="offersTitle" style="margin-top: 60px">Zlecenia klientów</h2>
 
     <p v-if="buyerLoading">Ładowanie...</p>
     <p v-else-if="buyerError">{{ buyerError }}</p>
     <p v-else-if="buyerAds.length === 0">Brak zleceń.</p>
 
     <div class="offersGrid">
-      <div v-for="o in buyerAds" :key="o.id">
+      <RouterLink v-for="o in buyerAds" :key="o.id" :to="`/request/${o.id}`">
         <OfferCard :offer="o" />
-      </div>
+      </RouterLink>
     </div>
   </section>
 </template>
