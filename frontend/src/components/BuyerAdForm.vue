@@ -76,11 +76,11 @@ const onSubmit = async (values) => {
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
-        Title: values.title,
-        Description: values.description,
-        Category: values.categories,
-        Budget: Number(values.budget),
-        Deadline: toIsoFromDateInput(values.deadline),
+        title: values.title,
+        description: values.description,
+        category: values.categories,
+        budget: Number(values.budget),
+        deadline: toIsoFromDateInput(values.deadline),
       }),
     });
 
