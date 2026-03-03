@@ -195,6 +195,45 @@ namespace ipz_marketplace.Migrations
                     b.ToTable("Buyers");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.BuyerAd", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Budget")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("BuyerId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Deadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId");
+
+                    b.ToTable("BuyerAds");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -240,6 +279,80 @@ namespace ipz_marketplace.Migrations
                     b.HasIndex("SellerAdId");
 
                     b.ToTable("Gigs");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdditionalInstructions")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AproxDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("BuyerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GigsId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId");
+
+                    b.HasIndex("SellerId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Revision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Revisions");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
@@ -332,6 +445,9 @@ namespace ipz_marketplace.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("BuyerAdId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -394,6 +510,8 @@ namespace ipz_marketplace.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuyerAdId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -467,6 +585,15 @@ namespace ipz_marketplace.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.BuyerAd", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.User", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId");
+
+                    b.Navigation("Buyer");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Gigs", b =>
                 {
                     b.HasOne("ipz_marketplace.Entities.SellerAd", "SellerAd")
@@ -476,6 +603,44 @@ namespace ipz_marketplace.Migrations
                         .IsRequired();
 
                     b.Navigation("SellerAd");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Order", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.Buyer", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.Gigs", "Gigs")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.Seller", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Buyer");
+
+                    b.Navigation("Gigs");
+
+                    b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Revision", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
@@ -498,6 +663,18 @@ namespace ipz_marketplace.Migrations
                         .IsRequired();
 
                     b.Navigation("Freelancer");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.User", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.BuyerAd", null)
+                        .WithMany("UsersBidding")
+                        .HasForeignKey("BuyerAdId");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.BuyerAd", b =>
+                {
+                    b.Navigation("UsersBidding");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.SellerAd", b =>

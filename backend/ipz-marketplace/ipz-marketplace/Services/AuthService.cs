@@ -66,9 +66,9 @@ namespace ipz_marketplace.Services
             if (result.Succeeded)
             {
                 if(userInfo.isFreelancer)
-                    await _userManager.AddToRoleAsync(newUser, "Freelancer");
+                    await _userManager.AddToRoleAsync(newUser, "Seller");
                 else
-                    await _userManager.AddToRoleAsync(newUser, "User");
+                    await _userManager.AddToRoleAsync(newUser, "Buyer");
 
                 // Create buyer profile for every new user
                 var buyer = new Buyer

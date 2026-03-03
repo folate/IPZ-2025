@@ -2,14 +2,18 @@
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "../../stores/auth";
+import { ROLES } from "../../auth/roles";
 import LoginModal from "../LoginModal.vue";
 import RegisterModal from "../RegisterModal.vue";
 import { ref as VueRef } from "vue";
 import AdForm from "../AdForm.vue";
+import BuyerAdForm from "../BuyerAdForm.vue";
+
 const showAdForm = VueRef(false);
+const showBuyerAdForm = VueRef(false);
 
 const router = useRouter();
-const { isLoggedIn, initAuth, logout } = useAuth();
+const { isLoggedIn, initAuth, logout, hasRole } = useAuth();
 
 const showLogin = VueRef(false);
 const showRegister = VueRef(false);
@@ -33,6 +37,11 @@ const closeRegisterAndRefresh = async () => {
   await initAuth();
 };
 
+const goToProfile = () => {
+  if (hasRole(ROLES.SELLER)) return router.push("/seller/profile");
+  return router.push("/buyer/profile");
+};
+
 const iconItems = computed(() => {
   if (!isLoggedIn.value) {
     return [
@@ -47,21 +56,25 @@ const iconItems = computed(() => {
 
   return [
     {
-      key: "upload",
+      key: "upload-adform",
       src: "/icons/adform.png",
       onClick: () => (showAdForm.value = true),
     },
     {
       key: "upload",
       src: "/icons/upload.png",
-      onClick: () => router.push("/buyer/ad"),
+      onClick: () => (showBuyerAdForm.value = true),
     },
-    { key: "favourites", src: "/icons/favourites.png", onClick: () => {} },
+    {
+      key: "favourites",
+      src: "/icons/favourites.png",
+      onClick: () => router.push("/liked"),
+    },
     { key: "notfulfilled", src: "/icons/notfulfilled.png", onClick: () => {} },
     {
       key: "user",
       src: "/icons/user.png",
-      onClick: () => router.push("/seller/profile"),
+      onClick: goToProfile,
     },
     {
       key: "logout",
@@ -101,4 +114,5 @@ const iconItems = computed(() => {
 
   <RegisterModal :isOpen="showRegister" @close="closeRegisterAndRefresh" />
   <AdForm :isOpen="showAdForm" @close="showAdForm = false" />
+  <BuyerAdForm :isOpen="showBuyerAdForm" @close="showBuyerAdForm = false" />
 </template>

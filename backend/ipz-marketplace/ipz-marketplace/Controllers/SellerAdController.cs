@@ -20,7 +20,7 @@ namespace ipz_marketplace.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "Freelancer")]
+        [Authorize(Roles = "Seller")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateAd([FromBody] SellerAdDTO adDto)
         {
@@ -38,6 +38,7 @@ namespace ipz_marketplace.Controllers
                 FreelancerId = userId,
                 Gigs = adDto.Gigs.Select(g => new Gigs
                 {
+                    Id = g.Id,
                     TierName = g.TierName,
                     TierDescription = g.TierDescription,
                     Price = g.Price
@@ -59,8 +60,10 @@ namespace ipz_marketplace.Controllers
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
+                    Freelancer = a.Freelancer.UserName,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
+                        Id = g.Id,
                         TierName = g.TierName,
                         TierDescription = g.TierDescription,
                         Price = g.Price
@@ -70,9 +73,41 @@ namespace ipz_marketplace.Controllers
             return Ok(ad);
         }
         [HttpGet("all/{number}")]
-        public async Task<IActionResult> GetFewAds([FromRoute]int number)
+        public async Task<IActionResult> GetFewAds([FromRoute] int number)
         {
             List<ListingSellerAdDTO> sellerAds = _context.SellerAds
+                .Select(a => new ListingSellerAdDTO
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Freelancer = a.Freelancer.UserName,
+                    FreelancerId = a.FreelancerId,
+                    Gigs = a.Gigs.Select(g => new GigsDTO
+                    {
+                        Id = g.Id,
+                        TierName = g.TierName,
+                        TierDescription = g.TierDescription,
+                        Price = g.Price
+                    }).ToList()
+                })
+                .Take(number)
+                .ToList();
+
+            return Ok(sellerAds);
+        }
+
+        [HttpGet("UserAds")]
+        public async Task<IActionResult> GetUsersAds()
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Unauthorized("userId went wrong!");
+            }
+
+            List<ListingSellerAdDTO> sellerAds = _context.SellerAds
+                .Where(a => a.FreelancerId == userId)
                 .Select(a => new ListingSellerAdDTO
                 {
                     Id = a.Id,
@@ -86,9 +121,7 @@ namespace ipz_marketplace.Controllers
                         Price = g.Price
                     }).ToList()
                 })
-                .Take(number)
                 .ToList();
-
             return Ok(sellerAds);
         }
     }

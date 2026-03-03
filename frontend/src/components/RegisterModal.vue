@@ -102,16 +102,7 @@ const schema = yup.object({
 
 const onSubmit = async (values) => {
   serverNotification.value = "";
-  console.log(
-    JSON.stringify({
-      login: values.userName,
-      Email: values.email,
-      FirstName: values.firstName,
-      LastName: values.lastName,
-      Password: values.password,
-      isFreelancer: values.isFreelancer,
-    })
-  );
+
   try {
     const response = await fetch("/api/auth/register", {
       method: "POST",
@@ -136,7 +127,7 @@ const onSubmit = async (values) => {
     }
 
     const result = await response.text();
-    console.log("Success:", result);
+    //console.log("Success:", result);
     emit("close");
   } catch (err) {
     console.error("Network error:", err);
