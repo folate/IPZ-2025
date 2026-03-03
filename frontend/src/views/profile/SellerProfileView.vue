@@ -1,34 +1,151 @@
 <script setup>
-import { ref } from "vue"
-import { useRouter } from "vue-router"
-import { Search, Heart, MessageCircle, Star, TriangleAlert } from "lucide-vue-next"
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { Search, Heart, MessageCircle, Star, TriangleAlert } from "lucide-vue-next";
 
-import LandingHeader from "../../components/landing/LandingHeader.vue"
-import Container from "../../components/ui/Container.vue"
+import LandingHeader from "../../components/landing/LandingHeader.vue";
+import Container from "../../components/ui/Container.vue";
+import OfferCard from "@/components/landing/OfferCard.vue";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-const router = useRouter()
+const router = useRouter();
 
-const tab = ref("offers") // offers | reviews | description
+const activeTab = ref("offers");
+const loading = ref(false);
+const error = ref("");
 
 const tabs = [
   { key: "offers", label: "Oferty" },
   { key: "reviews", label: "Opinie" },
   { key: "description", label: "O mnie" },
-]
+];
 
-//mocki
-const seller = {
-  name: "Jan Kowalski",
-  rating: 3,
-  description: ["Doświadczony projektant stron internetowych i aplikacji mobilnych.", "Specjalizuję się w tworzeniu nowoczesnych interfejsów.", "", "Zapraszam do współpracy!"],
+const me = ref(null);
+const offers = ref([]);
+const categories = ref([]);
+const selectedCategory = ref("all");
+const searchText = ref("");
+
+const displayName = computed(() => me.value?.login ?? "SELLER");
+
+function offerOwnerLogin(o) {
+  return (
+    o?.freelancer ??
+    o?.freelancerLogin ??
+    o?.seller ??
+    o?.sellerLogin ??
+    o?.login ??
+    null
+  );
 }
 
+const filteredOffers = computed(() => {
+  const q = searchText.value.trim().toLowerCase();
+  const cat = selectedCategory.value;
+
+  return (offers.value || []).filter((o) => {
+    if (cat !== "all") {
+      const offerCat = String(o?.category ?? "").trim();
+      if (offerCat !== cat) return false;
+    }
+
+    if (!q) return true;
+
+    const title = String(o?.title ?? "").toLowerCase();
+    const desc = String(o?.description ?? "").toLowerCase();
+
+    return title.includes(q) || desc.includes(q);
+  });
+});
+
+async function load() {
+  loading.value = true;
+  error.value = "";
+  me.value = null;
+  offers.value = [];
+
+  try {
+    const resUser = await fetch("/api/User/getUser", {
+      credentials: "include",
+    });
+
+    if (!resUser.ok) {
+      error.value = "Nie jesteś zalogowany.";
+      return;
+    }
+
+    const userData = await resUser.json();
+    me.value = userData;
+
+    const login = userData?.login;
+    if (!login) {
+      error.value = "Brak loginu w getUser.";
+      return;
+    }
+
+    const resOffers = await fetch("/api/sellerad/all/200", {
+      credentials: "include",
+    });
+
+    if (!resOffers.ok) {
+      error.value = `Nie udało się pobrać ofert (${resOffers.status}).`;
+      return;
+    }
+
+    const all = await resOffers.json();
+    const list = Array.isArray(all) ? all : [];
+
+    offers.value = list.filter((o) => offerOwnerLogin(o) === login);
+  } catch (e) {
+    error.value = e?.message ?? "Błąd podczas pobierania profilu.";
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function loadCategories() {
+  try {
+    const res = await fetch("/api/category", {
+      credentials: "include",
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    categories.value = Array.isArray(data) ? data : [];
+  } catch {
+    categories.value = [];
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([load(), loadCategories()]);
+});
+
+function selectCat(name) {
+  selectedCategory.value = name;
+}
+
+const isFavourite = ref(false);
+
+function onToggleFavourite() {
+  isFavourite.value = !isFavourite.value;
+}
+
+function onChatClick() {
+  console.log("chat click");
+}
+
+function onReport() {
+  alert("Reported user");
+}
+
+// mocks for reviews
 const reviewStats = {
   total: 123,
   avg: 4.2,
@@ -39,63 +156,13 @@ const reviewStats = {
     { stars: 2, count: 9 },
     { stars: 1, count: 12 },
   ],
-}
+};
 
 const reviews = [
   { id: 1, user: "Kasia", stars: 5, text: "Świetna robota, szybki czas realizacji!" },
   { id: 2, user: "Tomek", stars: 4, text: "Dobry kontakt, ale musiałem poprosić o poprawki." },
   { id: 3, user: "Michał", stars: 3, text: "Projektowanie mogłoby być trochę bardziej kreatywne." },
-]
-
-const leftMenu = [
-  { key: "all", label: "Wszystko" },
-  { key: "cat 1", label: "Kategoria 1" },
-  { key: "cat 2", label: "Kategoria 2" },
-  { key: "cat 3", label: "Kategoria 3" },
-  { key: "orders", label: "Moje zamówienia" }
-]
-
-const activeLeft = ref("all")
-
-//mock Orders
-const orders = [
-  { id: 101, user: "username1", title: "Zaprojektowanie logo 1" },
-  { id: 102, user: "username2", title: "Zaprojektowanie logo 2" },
-]
-
-function onReport()
-{
-  alert("Reported user")
-}
-
-function goBuyerProfile()
-{
-  router.push("/buyer/profile")
-}
-
-function onOrderClick(order)
-{
-  goBuyerProfile()
-}
-
-function onServiceClick()
-{
-  goBuyerProfile()
-}
-
-const isFavourite = ref(false)
-
-function onToggleFavourite()
-{
-  isFavourite.value = !isFavourite.value
-}
-
-function onChatClick()
-{
-  console.log("chat click")
-}
-
-const searchQuery = ref("")
+];
 </script>
 
 <template>
@@ -120,16 +187,16 @@ const searchQuery = ref("")
           <Avatar class="h-20 w-20 md:h-24 md:w-24 border-4 border-zinc-100 dark:border-zinc-900 shadow-xl bg-teal-50 dark:bg-teal-900/20">
             <AvatarImage src="" alt="Seller Avatar" />
             <AvatarFallback class="text-3xl text-teal-700 dark:text-teal-400 font-bold bg-zinc-100 dark:bg-zinc-800">
-              {{ seller.name.charAt(0) }}
+              {{ displayName.charAt(0).toUpperCase() }}
             </AvatarFallback>
           </Avatar>
           
           <div class="flex flex-col">
             <h1 class="text-2xl md:text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">
-              {{ seller.name }}
+              {{ displayName }}
             </h1>
             <div class="flex items-center gap-1 mt-1 text-teal-600 dark:text-teal-400">
-              <Star v-for="i in 5" :key="i" class="h-4 w-4 md:h-5 md:w-5" :class="i <= seller.rating ? 'fill-current' : 'text-zinc-300 dark:text-zinc-700'" />
+              <Star v-for="i in 5" :key="i" class="h-4 w-4 md:h-5 md:w-5" :class="i <= Math.round(reviewStats.avg) ? 'fill-current' : 'text-zinc-300 dark:text-zinc-700'" />
             </div>
           </div>
         </div>
@@ -139,8 +206,8 @@ const searchQuery = ref("")
           <div class="relative w-full max-w-xs md:w-64">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
             <Input 
-              v-model="searchQuery" 
-              placeholder="Szukaj..." 
+              v-model="searchText" 
+              placeholder="Szukaj w ofertach..." 
               class="pl-9 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 rounded-xl h-11"
             />
           </div>
@@ -159,7 +226,7 @@ const searchQuery = ref("")
 
       <!-- Main Content / Tabs -->
       <div class="mt-8">
-        <Tabs defaultValue="offers" v-model="tab" class="w-full">
+        <Tabs defaultValue="offers" v-model="activeTab" class="w-full">
           <TabsList class="w-full justify-start h-auto bg-transparent border-b border-zinc-200 dark:border-zinc-800 p-0 rounded-none gap-8">
             <TabsTrigger 
               v-for="t in tabs" 
@@ -173,8 +240,8 @@ const searchQuery = ref("")
 
           <!-- Description Tab -->
           <TabsContent value="description" class="pt-8 flex flex-col gap-2">
-             <p v-for="(line, idx) in seller.description" :key="idx" class="text-xl md:text-2xl font-medium text-zinc-600 dark:text-zinc-300">
-               {{ line }}
+             <p class="text-xl md:text-2xl font-medium text-zinc-600 dark:text-zinc-300">
+               Tu będzie opis profilu.
              </p>
           </TabsContent>
 
@@ -185,13 +252,21 @@ const searchQuery = ref("")
               <!-- Left Sidebar -->
               <aside class="w-full md:w-56 flex flex-col gap-1 md:border-r border-zinc-200 dark:border-zinc-800 md:pr-6 shrink-0">
                 <button
-                  v-for="m in leftMenu"
-                  :key="m.key"
                   class="text-left py-2 px-3 rounded-lg text-lg font-semibold transition-colors"
-                  :class="activeLeft === m.key ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'"
-                  @click="activeLeft = m.key"
+                  :class="selectedCategory === 'all' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'"
+                  @click="selectCat('all')"
                 >
-                  {{ m.label }}
+                  Wszystko
+                </button>
+
+                <button
+                  v-for="c in categories"
+                  :key="c.name"
+                  class="text-left py-2 px-3 rounded-lg text-lg font-semibold transition-colors"
+                  :class="selectedCategory === c.name ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'"
+                  @click="selectCat(c.name)"
+                >
+                  {{ c.name }}
                 </button>
 
                 <div class="mt-8">
@@ -204,44 +279,23 @@ const searchQuery = ref("")
 
               <!-- Main Offers Area -->
               <section class="flex-1">
-                <div v-if="activeLeft === 'orders'" class="flex flex-col gap-4">
-                  <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">Moje zamówienia</h2>
-                  
-                  <button v-for="o in orders" :key="o.id" class="w-full flex items-center gap-5 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-teal-500/30 hover:shadow-md transition-all text-left" @click="onOrderClick(o)">
-                    <div class="h-16 w-20 shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
-                      <span class="text-xs text-zinc-400 font-medium">Image</span>
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ o.title }}</span>
-                      <span class="text-sm text-zinc-500 dark:text-zinc-400">od <span class="text-teal-600 dark:text-teal-400 font-medium">{{ o.user }}</span></span>
-                    </div>
-                  </button>
-                </div>
-
-                <div v-else class="flex flex-col gap-10">
-                  <!-- Top Offers Row -->
+                <div class="flex flex-col gap-10">
                   <div>
-                    <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Najpopularniejsze oferty</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      
-                      <div v-for="i in 5" :key="i" class="flex flex-col gap-2">
-                        <button class="w-full aspect-video bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-teal-500/50 hover:shadow-lg transition-all" @click="onServiceClick"></button>
-                        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Przykładowy tytuł</span>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <!-- All Offers Grid -->
-                  <div>
-                    <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Wszystkie usługi</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      
-                      <div v-for="i in 5" :key="i" class="flex flex-col gap-2">
-                        <button class="w-full aspect-[4/3] bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-teal-500/50 hover:shadow-lg transition-all" @click="onServiceClick"></button>
-                        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Usługa {{ i }}</span>
-                      </div>
-
+                    <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Moje oferty</h2>
+                    
+                    <p v-if="loading" class="text-zinc-500">Ładowanie...</p>
+                    <p v-else-if="error" class="text-red-500">{{ error }}</p>
+                    <p v-else-if="filteredOffers.length === 0" class="text-zinc-500">Brak ofert.</p>
+                    
+                    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      <RouterLink
+                        v-for="o in filteredOffers"
+                        :key="o.id"
+                        :to="`/offer/${o.id}`"
+                        class="block h-full"
+                      >
+                        <OfferCard :offer="o" />
+                      </RouterLink>
                     </div>
                   </div>
                 </div>
@@ -252,8 +306,7 @@ const searchQuery = ref("")
 
           <!-- Reviews Tab -->
           <TabsContent value="reviews" class="pt-8">
-            <div class="flex flex-col md:flex-row gap-10 md:gap-16">
-              
+             <div class="flex flex-col md:flex-row gap-10 md:gap-16">
               <!-- Review List -->
               <section class="flex-1 flex flex-col gap-8">
                 <div v-for="r in reviews" :key="r.id" class="flex gap-4">
@@ -275,7 +328,6 @@ const searchQuery = ref("")
 
               <!-- Review Stats Sidebar -->
               <aside class="md:w-72 flex flex-col gap-6 md:border-l border-zinc-200 dark:border-zinc-800 md:pl-10 shrink-0">
-                
                 <div class="flex flex-col">
                   <span class="text-sm uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400 mb-1">Liczba opinii</span>
                   <span class="text-3xl font-black text-zinc-900 dark:text-zinc-50">{{ reviewStats.total }}</span>
@@ -294,7 +346,6 @@ const searchQuery = ref("")
                     <span class="text-sm font-semibold text-zinc-600 dark:text-zinc-300">{{ s.count }}</span>
                   </div>
                 </div>
-
               </aside>
             </div>
           </TabsContent>

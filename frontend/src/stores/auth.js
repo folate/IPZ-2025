@@ -7,10 +7,16 @@ const state = reactive({
 });
 
 function mapRole(roles) {
+  if (!Array.isArray(roles)) return ROLES.GUEST;
+
   if (roles.includes("Admin")) return ROLES.ADMIN;
+
+  if (roles.includes("Seller") || roles.includes("Freelancer"))
+    return ROLES.SELLER;
+
   if (roles.includes("Buyer")) return ROLES.BUYER;
-  if (roles.includes("Seller")) return ROLES.SELLER;
-  return ROLES.USER;
+
+  return ROLES.BUYER;
 }
 
 export function useAuth() {
@@ -43,7 +49,7 @@ export function useAuth() {
       state.user = {
         login: data?.login ?? null,
         roles,
-        role: ALL_ROLES.includes(finalRole) ? finalRole : ROLES.USER,
+        role: ALL_ROLES.includes(finalRole) ? finalRole : ROLES.BUYER,
       };
     } catch (e) {
       state.user = null;

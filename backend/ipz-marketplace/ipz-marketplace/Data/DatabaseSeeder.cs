@@ -23,7 +23,7 @@ public class DatabaseSeeder
         }
 
         // Utwórz rolę Admin jeśli nie istnieje
-        var Roles = new[] { "Admin", "User", "Freelancer" };
+        var Roles = new[] { "Admin", "Buyer", "Seller" };
 
         foreach (var role in Roles)
         {
@@ -50,7 +50,7 @@ public class DatabaseSeeder
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
-        var tab = new[] { "user", "freelancer" };
+        var tab = new[] { "buyer", "freelancer" };
 
         foreach (var name in tab) {
             var user = new User
@@ -65,10 +65,54 @@ public class DatabaseSeeder
 
             if ((await userManager.CreateAsync(user, "Tuba123!")).Succeeded)
             {
-                if(user.UserName == "freelancer")
-                    await userManager.AddToRoleAsync(user, "Freelancer");
+                if (user.UserName == "freelancer")
+                {
+                    await userManager.AddToRoleAsync(user, "Seller");
+                    var sellerAd = new SellerAd
+                    {
+                        Title = "Test Seller Ad",
+                        Description = "Description of testing sellerAd.",
+                        CreateDate = DateTime.UtcNow,
+                        Freelancer = user,
+                        FreelancerId = user.Id
+                    };
+
+                    var gig = new Gigs
+                    {
+                        TierName = "Sample Gig",
+                        TierDescription = "Description of tier.",
+                        Price = 100,
+                        SellerAdId = sellerAd.Id,
+                        SellerAd = sellerAd
+                    };
+                    context.SellerAds.Add(sellerAd);
+                    context.Gigs.Add(gig);
+
+                    var gig2 = new Gigs
+                    {
+                        TierName = "Sample Gig 2",
+                        TierDescription = "Description of tier.",
+                        Price = 200,
+                        SellerAdId = sellerAd.Id,
+                        SellerAd = sellerAd
+                    };
+                    context.Gigs.Add(gig2);
+                }
                 else
-                    await userManager.AddToRoleAsync(user, "User");
+                {
+                    await userManager.AddToRoleAsync(user, "Buyer");
+                    var userBuyer = new Buyer
+                    {
+                        UserId = user.Id,
+                        ShippingAddress = "456 User Street",
+                        BillingAddress = "456 User Street",
+                        TotalOrders = 0,
+                        JoinedDate = DateTime.UtcNow,
+                        LastOrderDate = null,
+                        PreferredPaymentMethod = "PayPal"
+                    };
+                    context.Buyers.Add(userBuyer);
+                }
             }
 
         }

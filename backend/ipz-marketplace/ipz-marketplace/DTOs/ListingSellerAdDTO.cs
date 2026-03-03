@@ -8,6 +8,7 @@ namespace ipz_marketplace.DTOs
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string FreelancerId { get; set; }
         public string Freelancer { get; set; }
         public List<GigsDTO> Gigs { get; set; }
     }

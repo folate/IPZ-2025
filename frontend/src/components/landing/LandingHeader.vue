@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref as VueRef } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "../../stores/auth";
-import { ref as VueRef } from "vue";
+import { ROLES } from "../../auth/roles";
 import AdForm from "../AdForm.vue";
 import { 
   ShoppingCart, 
@@ -18,11 +18,16 @@ import {
 const showAdForm = VueRef(false);
 
 const router = useRouter();
-const { isLoggedIn, initAuth, logout } = useAuth();
+const { isLoggedIn, initAuth, logout, hasRole } = useAuth();
 
 onMounted(async () => {
   await initAuth();
 });
+
+const goToProfile = () => {
+  if (hasRole(ROLES.SELLER)) return router.push("/seller/profile");
+  return router.push("/buyer/profile");
+};
 
 const iconItems = computed(() => {
   if (!isLoggedIn.value) {
@@ -47,12 +52,20 @@ const iconItems = computed(() => {
       icon: FilePlus,
       onClick: () => router.push("/buyer/ad"),
     },
-    { key: "favourites", icon: Heart, onClick: () => {} },
-    { key: "notfulfilled", icon: ListX, onClick: () => {} },
+    { 
+      key: "favourites", 
+      icon: Heart, 
+      onClick: () => router.push("/liked") 
+    },
+    { 
+      key: "notfulfilled", 
+      icon: ListX, 
+      onClick: () => {} 
+    },
     {
       key: "user",
       icon: User,
-      onClick: () => router.push("/seller/profile"),
+      onClick: goToProfile,
     },
     {
       key: "logout",

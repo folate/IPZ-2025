@@ -10,7 +10,6 @@ namespace ipz_marketplace.DTOs
         public string ShippingAddress { get; set; }
         public string BillingAddress { get; set; }
         public int TotalOrders { get; set; }
-        public DateTime JoinedDate { get; set; }
         public DateTime? LastOrderDate { get; set; }
         public string PreferredPaymentMethod { get; set; }
     }

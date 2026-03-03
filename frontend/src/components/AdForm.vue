@@ -1,3 +1,98 @@
+<script setup>
+import * as vue from "vue";
+import * as yup from "yup";
+import { Form, Field, ErrorMessage, FieldArray } from "vee-validate";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2 } from "lucide-vue-next";
+
+// We use a generic div for ScrollArea here to avoid installing more complex shadcn scroll-area element just for this modal.
+const ScrollArea = "div"; 
+
+const props = defineProps(["isOpen"]);
+const emit = defineEmits(["close"]);
+const categoryList = vue.ref([]);
+
+const fetchCategories = async () => {
+  try {
+    const response = await fetch("/api/category");
+    if (response.ok) {
+      const data = await response.json();
+      categoryList.value = data;
+    }
+  } catch (err) {
+    console.error("Failed to fetch categories:", err);
+  }
+};
+
+vue.onMounted(() => {
+  fetchCategories();
+});
+
+const schema = yup.object({
+  title: yup.string().required("Tytuł jest wymagany"),
+  description: yup.string().required("Opis jest wymagany"),
+  categories: yup.string().required("Proszę wybrać kategorię"),
+  tiers: yup
+    .array()
+    .of(
+      yup.object({
+        name: yup.string().required("Nazwa pakietu jest wymagana"),
+        price: yup
+          .number()
+          .typeError("Cena musi być liczbą")
+          .required("Cena jest wymagana")
+          .positive("Cena musi być dodatnia"),
+        description: yup.string().required("Opis pakietu jest wymagany"),
+      }),
+    )
+    .min(1, "Wymagany jest co najmniej jeden pakiet"),
+});
+
+const onSubmit = async (values, { setSubmitting }) => {
+  try {
+    const gigsPayload = values.tiers.map((tier) => ({
+      TierName: tier.name,
+      TierDescription: tier.description,
+      Price: tier.price,
+    }));
+
+    const response = await fetch("/api/sellerad/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        Title: values.title,
+        Description: values.description,
+        Category: values.categories,
+        Gigs: gigsPayload,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server Error:", response.status, errorText);
+      return;
+    }
+
+    const result = await response.text();
+    console.log("Success:", result);
+    emit("close");
+  } catch (err) {
+    console.error("Submission Error:", err);
+  } finally {
+    setSubmitting(false);
+  }
+};
+</script>
+
 <template>
   <Dialog :open="isOpen" @update:open="(val) => !val && $emit('close')">
     <DialogContent class="sm:max-w-2xl bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-2xl p-0 overflow-hidden rounded-2xl">
@@ -103,7 +198,7 @@
                       </div>
 
                       <div class="grid gap-2">
-                        <Label class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">Krótki opis</Label>
+                          <Label class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">Krótki opis</Label>
                         <Field
                           :name="`tiers[${index}].description`"
                           as="input"
@@ -146,98 +241,3 @@
     </DialogContent>
   </Dialog>
 </template>
-
-<script setup>
-import * as vue from "vue";
-import * as yup from "yup";
-import { Form, Field, ErrorMessage, FieldArray } from "vee-validate";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-vue-next";
-
-// We use a generic div for ScrollArea here to avoid installing more complex shadcn scroll-area element just for this modal.
-const ScrollArea = "div"; 
-
-const props = defineProps(["isOpen"]);
-const emit = defineEmits(["close"]);
-const categoryList = vue.ref([]);
-
-const fetchCategories = async () => {
-  try {
-    const response = await fetch("/api/category");
-    if (response.ok) {
-      const data = await response.json();
-      categoryList.value = data;
-    }
-  } catch (err) {
-    console.error("Failed to fetch categories:", err);
-  }
-};
-
-vue.onMounted(() => {
-  fetchCategories();
-});
-
-const schema = yup.object({
-  title: yup.string().required("Tytuł jest wymagany"),
-  description: yup.string().required("Opis jest wymagany"),
-  categories: yup.string().required("Proszę wybrać kategorię"),
-  tiers: yup
-    .array()
-    .of(
-      yup.object({
-        name: yup.string().required("Nazwa pakietu jest wymagana"),
-        price: yup
-          .number()
-          .typeError("Cena musi być liczbą")
-          .required("Cena jest wymagana")
-          .positive("Cena musi być dodatnia"),
-        description: yup.string().required("Opis pakietu jest wymagany"),
-      }),
-    )
-    .min(1, "Wymagany jest co najmniej jeden pakiet"),
-});
-
-const onSubmit = async (values, { setSubmitting }) => {
-  try {
-    const gigsPayload = values.tiers.map((tier) => ({
-      TierName: tier.name,
-      TierDescription: tier.description,
-      Price: tier.price,
-    }));
-
-    const response = await fetch("/api/sellerad/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Title: values.title,
-        Description: values.description,
-        Category: values.categories,
-        Gigs: gigsPayload,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server Error:", response.status, errorText);
-      return;
-    }
-
-    const result = await response.text();
-    console.log("Success:", result);
-    emit("close");
-  } catch (err) {
-    console.error("Submission Error:", err);
-  } finally {
-    setSubmitting(false);
-  }
-};
-</script>
