@@ -16,6 +16,8 @@ const offers = ref([]);
 const categories = ref([]);
 const selectedCategory = ref("all");
 
+const searchText = ref("");
+
 const displayName = computed(() => me.value?.login ?? "NAME");
 
 function offerOwnerLogin(o) {
@@ -28,6 +30,25 @@ function offerOwnerLogin(o) {
     null
   );
 }
+
+const filteredOffers = computed(() => {
+  const q = searchText.value.trim().toLowerCase();
+  const cat = selectedCategory.value;
+
+  return (offers.value || []).filter((o) => {
+    if (cat !== "all") {
+      const offerCat = String(o?.category ?? "").trim();
+      if (offerCat !== cat) return false;
+    }
+
+    if (!q) return true;
+
+    const title = String(o?.title ?? "").toLowerCase();
+    const desc = String(o?.description ?? "").toLowerCase();
+
+    return title.includes(q) || desc.includes(q);
+  });
+});
 
 async function load() {
   loading.value = true;
@@ -116,8 +137,26 @@ onMounted(async () => {
         <div class="spacer"></div>
 
         <div class="searchBox">
-          <input class="searchInput" />
-          <span class="searchLens"></span>
+          <input
+            v-model="searchText"
+            class="searchInput"
+            placeholder="Szukaj w moich ofertach..."
+          />
+
+          <button class="searchBtn" type="button" aria-label="Szukaj">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M16.5 16.5 21 21"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
         </div>
 
         <button class="circleBtn" type="button">
@@ -181,8 +220,10 @@ onMounted(async () => {
                   {{ c.name }}
                 </button>
 
-                <!-- JEDYNY SETTINGS (ma otwierać buyer settings) -->
-                <button v-on:click="router.push('/buyer/profile/settings')">
+                <button
+                  type="button"
+                  @click="router.push('/buyer/profile/settings')"
+                >
                   Settings!
                 </button>
               </aside>
@@ -190,11 +231,13 @@ onMounted(async () => {
               <section class="offersMain">
                 <div class="sectionTitle">Top offers</div>
 
-                <p v-if="offers.length === 0" class="info">Brak ofert.</p>
+                <p v-if="filteredOffers.length === 0" class="info">
+                  Brak ofert.
+                </p>
 
                 <div class="offersGrid" v-else>
                   <RouterLink
-                    v-for="o in offers"
+                    v-for="o in filteredOffers"
                     :key="o.id"
                     :to="`/offer/${o.id}`"
                     class="offerLink"
@@ -281,7 +324,9 @@ onMounted(async () => {
 }
 
 .searchBox {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .searchInput {
@@ -289,31 +334,23 @@ onMounted(async () => {
   height: 38px;
   border-radius: 9px;
   border: 2px solid rgba(0, 0, 0, 0.2);
-  padding: 0 44px 0 12px;
+  padding: 0 12px;
   outline: none;
 }
 
-.searchLens {
-  position: absolute;
-  right: 12px;
-  top: 10px;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.35);
-  border-radius: 50%;
-  opacity: 0.8;
+.searchBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.75);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
 
-.searchLens::after {
-  content: "";
-  position: absolute;
-  width: 8px;
-  height: 2px;
-  background: rgba(0, 0, 0, 0.35);
-  right: -6px;
-  bottom: -4px;
-  transform: rotate(45deg);
-  border-radius: 2px;
+.searchBtn svg {
+  color: rgba(0, 0, 0, 0.55);
 }
 
 .circleBtn {
