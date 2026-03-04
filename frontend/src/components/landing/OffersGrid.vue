@@ -147,7 +147,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="container mx-auto px-4 sm:px-6 py-12 sm:py-16 w-full">
+  <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
     <div class="flex items-center justify-between mb-8">
       <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
         Polecane Oferty

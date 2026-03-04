@@ -95,7 +95,7 @@ const onSubmit = async (values, { setSubmitting }) => {
 
 <template>
   <Dialog :open="isOpen" @update:open="(val) => !val && $emit('close')">
-    <DialogContent class="sm:max-w-2xl bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-2xl p-0 overflow-hidden rounded-2xl">
+    <DialogContent class="sm:max-w-4xl bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-2xl p-0 overflow-hidden rounded-2xl">
       <DialogHeader class="p-6 pb-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
         <DialogTitle class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Utwórz Ogłoszenie</DialogTitle>
         <DialogDescription class="text-zinc-500 dark:text-zinc-400">

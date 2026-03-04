@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { ErrorMessage, Field, Form } from "vee-validate"
 import * as yup from "yup"
@@ -12,7 +13,15 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Badge } from "@/components/ui/badge"
+import { Calendar as CalendarIcon, X, Search } from "lucide-vue-next"
+import { cn } from "@/lib/utils"
+import { DateFormatter, getLocalTimeZone, CalendarDate } from "@internationalized/date"
 
+const df = new DateFormatter("pl-PL", { dateStyle: "long" })
 const router = useRouter()
 
 //opcje
@@ -46,11 +55,35 @@ const schema = yup.object({
   tags: yup.array().of(yup.string()).nullable(),
 })
 
-async function onSubmit(values)
-{
-  console.log("SUBMIT buyer ad:", values)
-  alert("Opublikowano formularz (Mock)! Zobacz konsolę.")
-  router.push("/buyer/profile")
+async function onSubmit(values) {
+  try {
+    const payload = {
+      title: values.title,
+      description: values.description,
+      deadline: new Date(values.deadline).toISOString(),
+      category: values.type,
+      budget: Number(values.budget),
+      // tags are ignored by the backend schema provided, but added here in case it's needed later or can be stripped safely
+      // tags: values.tags || []
+    }
+
+    const res = await fetch("/api/BuyerAd/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      credentials: "include"
+    })
+
+    if (!res.ok) {
+      throw new Error(`Błąd serwera: ${res.status}`)
+    }
+
+    alert("Pomyślnie dodano zlecenie!")
+    router.push("/buyer/profile")
+  } catch (error) {
+    console.error("Błąd podczas dodawania zlecenia:", error)
+    alert("Wystąpił błąd podczas dodawania zlecenia.")
+  }
 }
 </script>
 
@@ -59,7 +92,7 @@ async function onSubmit(values)
     <LandingHeader />
 
     <Container>
-      <div class="mt-8 flex flex-col gap-6 max-w-3xl mx-auto">
+      <div class="mt-8 flex flex-col gap-6 w-full">
         
         <div>
           <h1 class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">Kreator Ogłoszenia</h1>
@@ -138,21 +171,79 @@ async function onSubmit(values)
                   <!-- Deadline -->
                   <div class="flex flex-col gap-2">
                     <Label for="deadline" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Termin oddania</Label>
-                    <Field name="deadline" v-slot="{ field }">
-                      <Input id="deadline" type="date" v-bind="field" class="h-11 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500" />
+                    <Field name="deadline" v-slot="{ value, handleChange }">
+                      <Popover>
+                        <PopoverTrigger as-child>
+                          <Button
+                            variant="outline"
+                            :class="cn('h-11 justify-start text-left font-normal rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus-visible:ring-teal-500', !value && 'text-zinc-500')"
+                          >
+                            <CalendarIcon class="mr-2 h-4 w-4" />
+                            <span>{{ value ? df.format(new Date(value)) : 'Wybierz datę z kalendarza' }}</span>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent class="w-auto p-0 z-[100] bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800" align="start">
+                          <Calendar
+                            :model-value="value ? new CalendarDate(new Date(value).getFullYear(), new Date(value).getMonth() + 1, new Date(value).getDate()) : undefined"
+                            @update:model-value="(v) => { if(v) { const d = v.toDate(getLocalTimeZone()); d.setHours(12); handleChange(d.toISOString()); } else { handleChange(null); } }"
+                            initial-focus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </Field>
                     <div class="h-4"><ErrorMessage name="deadline" class="text-xs text-red-500 font-medium block" /></div>
                   </div>
 
-                  <!-- AI Tags (Simplified for now standard multiselect would require more complex Shadcn combobox) -->
-                  <div class="flex flex-col gap-2">
-                    <Label for="tags" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Targi (opcjonalne, przytrzymaj Ctrl aby zaznaczyć wiele)</Label>
-                    <Field name="tags" v-slot="{ field, handleChange }">
-                      <select id="tags" multiple @change="(e) => handleChange(Array.from(e.target.selectedOptions).map(o => o.value))" class="rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 h-[88px] text-sm text-zinc-900 dark:text-zinc-200 p-2">
-                         <option v-for="t in aiTags" :key="t.value" :value="t.value" class="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer rounded">
-                           {{ t.label }}
-                         </option>
-                      </select>
+                  <!-- AI Tags -->
+                  <div class="flex flex-col gap-3">
+                    <Label for="tags" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tagi (opcjonalne)</Label>
+                    <Field name="tags" v-slot="{ value, handleChange }">
+                      <div class="flex flex-col gap-3">
+                        
+                        <!-- Search Input (Triggers Dropdown via CSS focus-within) -->
+                        <div class="relative w-full group">
+                          <Command class="overflow-visible bg-transparent border-none p-0">
+                            <div class="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 overflow-hidden focus-within:ring-2 focus-within:ring-teal-500 transition-all flex items-center pr-3">
+                              <CommandInput placeholder="Wpisz aby wyszukać tagi..." class="border-none focus:ring-0 shadow-none outline-none ring-0 w-full bg-transparent h-11" />
+                            </div>
+                            
+                            <!-- The Dropdown (Absolute positioned) -->
+                            <div class="absolute top-full left-0 w-full z-[100] mt-2 hidden group-focus-within:block" @mousedown.prevent>
+                              <div class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden">
+                                <CommandList class="max-h-60 overflow-y-auto w-full p-2">
+                                  <CommandEmpty class="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">Nie znaleziono tagów.</CommandEmpty>
+                                  <CommandGroup>
+                                    <CommandItem
+                                      v-for="t in aiTags.filter(t => !(value || []).includes(t.value))"
+                                      :key="t.value"
+                                      :value="t.label"
+                                      @select="() => { handleChange([...(value || []), t.value]); }"
+                                      class="cursor-pointer px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg font-medium"
+                                    >
+                                      {{ t.label }}
+                                    </CommandItem>
+                                  </CommandGroup>
+                                </CommandList>
+                              </div>
+                            </div>
+                          </Command>
+                        </div>
+
+                        <!-- Selected Tags Below -->
+                        <div class="flex flex-wrap gap-2" v-if="value && value.length > 0">
+                          <Badge 
+                            v-for="tag in value" 
+                            :key="tag" 
+                            variant="secondary"
+                            class="px-3 py-1.5 text-sm bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800 rounded-lg flex items-center"
+                          >
+                            {{ aiTags.find(t => t.value === tag)?.label || tag }}
+                            <button type="button" class="ml-2 hover:text-red-500 rounded-full focus:outline-none transition-colors" @click="handleChange((value || []).filter(v => v !== tag))">
+                              <X class="h-3.5 w-3.5" />
+                            </button>
+                          </Badge>
+                        </div>
+                      </div>
                     </Field>
                     <div class="h-4"><ErrorMessage name="tags" class="text-xs text-red-500 font-medium block" /></div>
                   </div>

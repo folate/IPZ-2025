@@ -22,10 +22,11 @@ const router = createRouter({
       name: "register",
       component: () => import("../views/RegisterView.vue"),
     },
+
     {
-      path: "/about",
-      name: "about",
-      component: () => import("../views/AboutView.vue"),
+      path: "/buyer/ad",
+      name: "buyer-ad-form",
+      component: () => import("../views/ad/BuyerAdFormView.vue"),
     },
 
     // (jeśli masz seller/buyer profile to zostaw swoje istniejące)

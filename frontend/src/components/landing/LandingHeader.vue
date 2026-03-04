@@ -44,45 +44,51 @@ const iconItems = computed(() => {
   return [
     {
       key: "adform",
+      label: "Utwórz Ogłoszenie Usługi",
       icon: PlusCircle,
       onClick: () => (showAdForm.value = true),
     },
     {
       key: "upload",
+      label: "Dodaj Zlecenie Usługi",
       icon: FilePlus,
       onClick: () => router.push("/buyer/ad"),
     },
     { 
       key: "favourites", 
+      label: "Ulubione",
       icon: Heart, 
       onClick: () => router.push("/liked") 
     },
     { 
       key: "notfulfilled", 
+      label: "Niespełnione",
       icon: ListX, 
       onClick: () => {} 
     },
     {
       key: "user",
+      label: "Profil",
       icon: User,
       onClick: goToProfile,
     },
     {
       key: "logout",
+      label: "Wyloguj",
       icon: LogOut,
       onClick: async () => {
         await logout();
         router.push("/");
       },
     },
-    { key: "cart", icon: ShoppingCart, onClick: () => {} },
+    { key: "cart", label: "Koszyk", icon: ShoppingCart, onClick: () => {} },
   ];
 });
 </script>
 
 <template>
   <header class="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-    <div class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
+    <div class="w-full max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
       <div class="text-2xl font-black tracking-tighter text-teal-600 dark:text-teal-500 cursor-pointer" @click="router.push('/')">
         LOGO
       </div>
@@ -94,7 +100,7 @@ const iconItems = computed(() => {
           class="flex h-10 w-10 items-center justify-center rounded-full text-zinc-600 dark:text-zinc-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           type="button"
           @click="item.onClick"
-          :title="item.key"
+          :title="item.label"
         >
           <component :is="item.icon" class="h-5 w-5" />
         </button>

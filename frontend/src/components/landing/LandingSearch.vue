@@ -31,7 +31,7 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="w-full bg-gradient-to-b from-teal-50/50 to-background dark:from-teal-950/20 py-16 sm:py-24">
-    <div class="container mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center space-y-8">
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center space-y-8">
       <div class="space-y-4 max-w-3xl">
         <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
           Znajdź to, czego <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700">potrzebujesz.</span>

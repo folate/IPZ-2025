@@ -20,7 +20,7 @@ function pick(c) {
 
 <template>
   <section class="w-full bg-zinc-50 dark:bg-zinc-900/50 py-6 border-b border-zinc-200 dark:border-zinc-800">
-    <div class="container mx-auto px-4 sm:px-6">
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-wrap items-center gap-3 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
         
         <DropdownMenu>
