@@ -15,30 +15,63 @@ namespace ipz_marketplace.Controllers
         }
 
         [HttpGet]
-        public ActionResult Index([FromQuery] string search)
+        public ActionResult Index([FromQuery] string search, [FromQuery] string category)
         {
-            var content = _context.SellerAds
-                .AsNoTracking()
-                .Select(
-                    a => new ListingSellerAdDTO
-                    {
-                        Id = a.Id,
-                        Title = a.Title,
-                        Description = a.Description,
-                        Freelancer = a.Freelancer.UserName,
-                        Gigs = a.Gigs.Select(g => new GigsDTO
-                        {
-                            Id = g.Id,
-                            TierName = g.TierName,
-                            TierDescription = g.TierDescription,
-                            Price = g.Price
-                        }).ToList()
-                    })
-                .Where(p => EF.Functions.ILike(p.Title, $"%{search}%") || EF.Functions.ILike(p.Description, $"%{search}%"))
-                .Take(10)
-                .ToList();
-            if(content != null)
-                return Ok(content);
+            if(category == null)
+            {
+                var content = _context.SellerAds
+                               .AsNoTracking()
+                               .Select(
+                                   a => new ListingSellerAdDTO
+                                   {
+                                       Id = a.Id,
+                                       Title = a.Title,
+                                       Description = a.Description,
+                                       Freelancer = a.Freelancer.UserName,
+                                       Category = a.Category,
+                                       Gigs = a.Gigs.Select(g => new GigsDTO
+                                       {
+                                           Id = g.Id,
+                                           TierName = g.TierName,
+                                           TierDescription = g.TierDescription,
+                                           Price = g.Price
+                                       }).ToList()
+                                   })
+                               .Where(p => EF.Functions.ILike(p.Title, $"%{search}%")
+                               || EF.Functions.ILike(p.Description, $"%{search}%"))
+                               .Take(10)
+                               .ToList();
+                if (content != null)
+                    return Ok(content);
+            }
+            else
+            {
+                var content = _context.SellerAds
+                               .AsNoTracking()
+                               .Select(
+                                   a => new ListingSellerAdDTO
+                                   {
+                                       Id = a.Id,
+                                       Title = a.Title,
+                                       Description = a.Description,
+                                       Freelancer = a.Freelancer.UserName,
+                                       Category = a.Category,
+                                       Gigs = a.Gigs.Select(g => new GigsDTO
+                                       {
+                                           Id = g.Id,
+                                           TierName = g.TierName,
+                                           TierDescription = g.TierDescription,
+                                           Price = g.Price
+                                       }).ToList()
+                                   })
+                               .Where(p => EF.Functions.ILike(p.Title, $"%{search}%")
+                               || EF.Functions.ILike(p.Description, $"%{search}%")
+                               && p.Category == category)
+                               .Take(10)
+                               .ToList();
+                if (content != null)
+                    return Ok(content);
+            }
             return BadRequest();
         }
     }

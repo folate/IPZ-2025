@@ -33,7 +33,7 @@ namespace ipz_marketplace.Controllers
             var newOrder = new Order
             {
                 Quantity = order.Quantity,
-                Price = order.Price,
+                Price = (int)order.Quantity * (int)_context.Gigs.FirstOrDefault(z => z.Id == order.GigId).Price,
                 AdditionalInstructions = order.AdditionalInstructions,
                 AproxDeliveryDate = order.AproxDeliveryTime,
                 OrderDate = DateTime.Now,

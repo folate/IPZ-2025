@@ -73,6 +73,7 @@ public class DatabaseSeeder
                         Title = "Test Seller Ad",
                         Description = "Description of testing sellerAd.",
                         CreateDate = DateTime.UtcNow,
+                        Category = "Web Development",
                         Freelancer = user,
                         FreelancerId = user.Id
                     };

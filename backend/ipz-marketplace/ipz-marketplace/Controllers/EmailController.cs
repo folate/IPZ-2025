@@ -1,6 +1,7 @@
 ﻿using MailKit.Net.Smtp;
-using MimeKit;
+using MailKit.Security;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
 
 
 namespace ipz_marketplace.Controllers
@@ -16,23 +17,24 @@ namespace ipz_marketplace.Controllers
         [HttpPost]
         public async Task<IActionResult> SendEmail()
         {
-            var email = new MimeMessage();
-            var smtpClient = new SmtpClient();
-            var builder = new BodyBuilder()
-            {
-                TextBody = @"This is a test email sent from the IPZ Marketplace application."
-            };
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Marketplace", "ipzmarketplace@onet.pl"));
+            message.To.Add(new MailboxAddress("Odbiorca", "pe55848@zut.edu.pl"));
+            message.Subject = "Dane konfiguracyjne działają!";
+            message.Body = new TextPart("plain") { Text = "Testowa wiadomość." };
+
+            using var client = new SmtpClient();
             try
             {
-                email.From.Add(new MailboxAddress("IPZ Marketplace", "noreply@ipzmarketplace.com"));
-                email.To.Add(new MailboxAddress("Recipient", "pe55848@zut.edu.pl"));
-                email.Subject = "Test Email from IPZ Marketplace";
-                email.Body = builder.ToMessageBody();
-                smtpClient.Connect("live.smtp.mailtrap.io", 587, false);
+                await client.ConnectAsync("smtp.poczta.onet.pl", 465, SecureSocketOptions.SslOnConnect);
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                client.AuthenticationMechanisms.Remove("NTLM");
+                await client.AuthenticateAsync("ipzmarketplace@onet.pl", "PFUW-RO39-ZNRZ-0HXI");
 
-                smtpClient.Authenticate("api", "");
-                smtpClient.Send(email);
-                smtpClient.Disconnect(true);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+
+                Console.WriteLine("Sukces!");
             }
             catch (Exception ex) {
                 return BadRequest($"Failed to send email: {ex.Message}");

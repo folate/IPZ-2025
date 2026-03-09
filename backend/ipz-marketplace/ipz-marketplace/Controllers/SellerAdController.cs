@@ -36,6 +36,7 @@ namespace ipz_marketplace.Controllers
                 Description = adDto.Description,
                 CreateDate = DateTime.UtcNow,
                 FreelancerId = userId,
+                Category = adDto.Category,
                 Gigs = adDto.Gigs.Select(g => new Gigs
                 {
                     Id = g.Id,
@@ -61,6 +62,7 @@ namespace ipz_marketplace.Controllers
                     Title = a.Title,
                     Description = a.Description,
                     Freelancer = a.Freelancer.UserName,
+                    Category = a.Category,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
                         Id = g.Id,
@@ -83,6 +85,7 @@ namespace ipz_marketplace.Controllers
                     Description = a.Description,
                     Freelancer = a.Freelancer.UserName,
                     FreelancerId = a.FreelancerId,
+                    Category = a.Category,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
                         Id = g.Id,
@@ -114,6 +117,7 @@ namespace ipz_marketplace.Controllers
                     Title = a.Title,
                     Description = a.Description,
                     Freelancer = a.Freelancer.UserName,
+                    Category = a.Category,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
                         TierName = g.TierName,

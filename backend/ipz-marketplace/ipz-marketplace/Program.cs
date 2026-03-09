@@ -114,7 +114,7 @@ public class Program
 
         app.UseCors();
 
-        app.UseHttpsRedirection();
+        //app.UseHttpsRedirection();
 
         app.UseAuthentication();
 
