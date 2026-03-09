@@ -52,8 +52,8 @@ namespace ipz_marketplace.Controllers
             return Ok("Sucessfuly created!");
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserAd([FromRoute] int id)
+        [HttpGet("{name}")]
+        public async Task<IActionResult> GetUserAd([FromRoute] string name)
         {
             var ad = _context.SellerAds
                 .Select(a => new ListingSellerAdDTO
@@ -71,7 +71,7 @@ namespace ipz_marketplace.Controllers
                         Price = g.Price
                     }).ToList()
                 })
-                .FirstOrDefault(a => a.Id == id);
+                .FirstOrDefault(a => a.Freelancer == name);
             return Ok(ad);
         }
         [HttpGet("all/{number}")]

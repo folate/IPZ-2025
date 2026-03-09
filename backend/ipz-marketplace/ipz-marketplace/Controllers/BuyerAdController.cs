@@ -47,8 +47,8 @@ namespace ipz_marketplace.Controllers
             return Ok("Sucessfuly created!");
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetBuyerAd([FromRoute] int id)
+        [HttpGet("{name}")]
+        public async Task<IActionResult> GetBuyerAd([FromRoute] string name)
         {
             var ad = _context.BuyerAds.Select(a => new ListingBuyerAdDTO
             {
@@ -60,7 +60,7 @@ namespace ipz_marketplace.Controllers
                 Deadline = a.Deadline,
                 Category = a.Category,
                 Budget = a.Budget,
-            }).FirstOrDefault(a => a.Id == id);
+            }).FirstOrDefault(a => a.BuyerName == name);
 
             if (ad == null) return NoContent();
 
@@ -68,16 +68,28 @@ namespace ipz_marketplace.Controllers
         }
 
         [HttpGet("all/{number}")]
-        public async Task<IActionResult> GetFewAds([FromRoute]int number)
+        public async Task<IActionResult> GetFewAds([FromRoute] int number)
+        {
+            List<BuyerAd> ads = _context.BuyerAds.Take(number).ToList();
+
+            if (ads.Count == 0)
+                return NoContent();
+            return Ok(ads);
+        }
+
+        [HttpGet("UserAds")]
+        public async Task<IActionResult> GetUserAds()
         {
             var userId = _userManager.GetUserId(User);
-            if(userId == null)
+            if (userId == null)
             {
                 return Unauthorized("userId went wrong!");
             }
 
-            List<BuyerAd> ads = _context.BuyerAds.Where(a => a.Buyer.Id == userId).Take(number).ToList();
+            var ads = _context.BuyerAds.Where(a => a.Buyer.Id == userId).ToList();
 
+            if (ads.Count == 0)
+                return NoContent();
             return Ok(ads);
         }
     }
