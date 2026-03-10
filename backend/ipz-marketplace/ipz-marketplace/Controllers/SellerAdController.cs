@@ -30,6 +30,32 @@ namespace ipz_marketplace.Controllers
                 return Unauthorized("userId went wrong!");
             }
 
+            var photosFile = new List<AdPhoto>();
+
+            if (adDto.Photos != null && adDto.Photos.Any())
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "photos");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                foreach (var file in adDto.Photos)
+                {
+                    if (file.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                        var filePath = Path.Combine(uploadsFolder, fileName);
+                        var stream = new FileStream(filePath, FileMode.Create);
+
+                        await file.CopyToAsync(stream);
+                        var adPhoto = new AdPhoto
+                        {
+                            Url = $"/photos/{fileName}",
+                            IsMain = (adDto.Photos.Count == 0)
+                        };
+                        photosFile.AddRange(adPhoto);
+                    }
+                }
+            }           
+
             var ad = new SellerAd
             {
                 Title = adDto.Title,
@@ -43,7 +69,8 @@ namespace ipz_marketplace.Controllers
                     TierName = g.TierName,
                     TierDescription = g.TierDescription,
                     Price = g.Price
-                }).ToList()
+                }).ToList(),
+                Photos = photosFile
             };
 
             _context.SellerAds.Add(ad);
@@ -69,6 +96,11 @@ namespace ipz_marketplace.Controllers
                         TierName = g.TierName,
                         TierDescription = g.TierDescription,
                         Price = g.Price
+                    }).ToList(),
+                    Photos = a.Photos.Select(p => new AdPhoto
+                    {
+                        Id = p.Id,
+                        Url = p.Url
                     }).ToList()
                 })
                 .FirstOrDefault(a => a.Id == id);
@@ -92,6 +124,11 @@ namespace ipz_marketplace.Controllers
                         TierName = g.TierName,
                         TierDescription = g.TierDescription,
                         Price = g.Price
+                    }).ToList(),
+                    Photos = a.Photos.Select(p => new AdPhoto
+                    {
+                        Id = p.Id,
+                        Url = p.Url
                     }).ToList()
                 })
                 .Take(number)
@@ -123,6 +160,11 @@ namespace ipz_marketplace.Controllers
                         TierName = g.TierName,
                         TierDescription = g.TierDescription,
                         Price = g.Price
+                    }).ToList(),
+                    Photos = a.Photos.Select(p => new AdPhoto
+                    {
+                        Id = p.Id,
+                        Url = p.Url
                     }).ToList()
                 })
                 .ToList();

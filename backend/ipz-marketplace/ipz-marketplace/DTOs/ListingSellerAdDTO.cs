@@ -12,5 +12,6 @@ namespace ipz_marketplace.DTOs
         public string FreelancerId { get; set; }
         public string Freelancer { get; set; }
         public List<GigsDTO> Gigs { get; set; }
+        public List<AdPhoto> Photos { get; set; }
     }
 }

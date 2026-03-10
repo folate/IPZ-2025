@@ -50,6 +50,14 @@ public class MarketplaceDbContext : IdentityDbContext<User>
                   .HasColumnType("numeric(18,2)");
         });
 
+        builder.Entity<AdPhoto>(entity =>
+        {
+            entity.HasOne(p => p.SellerAd)
+                  .WithMany(a => a.Photos)
+                  .HasForeignKey(p => p.SellerAdId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
         builder.Entity<Buyer>()
             .HasOne(b => b.User)
             .WithOne(u => u.Buyer)

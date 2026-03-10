@@ -6,6 +6,7 @@
         public string Url { get; set; }
         public bool IsMain { get; set; }
 
+        public SellerAd SellerAd { get; set; }
         public int SellerAdId { get; set; }
     }
 }

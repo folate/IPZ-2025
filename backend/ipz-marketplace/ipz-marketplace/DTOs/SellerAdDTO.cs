@@ -10,5 +10,6 @@ namespace ipz_marketplace.DTOs
         public string Title { get; set; }
         public string Description { get; set; }
         public List<GigsDTO> Gigs { get; set; }
+        public List<IFormFile> Photos { get; set; }
     }
 }
