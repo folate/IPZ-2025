@@ -16,7 +16,7 @@ const error = ref("");
 const buyerError = ref("");
 
 const searchTerm = ref("");
-
+const category = ref("");
 function norm(s) {
   return String(s ?? "")
     .toLowerCase()
@@ -62,10 +62,12 @@ async function loadOffers() {
 
   try {
     const q = norm(searchTerm.value);
-    const url = q
-      ? `/api/Search?search=${encodeURIComponent(q)}`
-      : `/api/SellerAd/all/${props.limit}`;
-
+    const cat = category.value;
+    let url = `/api/SellerAd/all/${props.limit}`;
+    if (q || cat) {
+      url = `/api/Search?search=${encodeURIComponent(q)}&category=${encodeURIComponent(cat)}`;
+    }
+    console.log(url);
     const res = await fetch(url, { credentials: "include" });
 
     if (!res.ok) {
@@ -121,6 +123,10 @@ function onSearchChanged(e) {
   searchTerm.value = e?.detail ?? "";
   loadOffers();
 }
+function onCategoryChanged(e) {
+  category.value = e.detail ?? "";
+  loadOffers();
+}
 
 function onSellerCreated() {
   loadOffers();
@@ -135,6 +141,7 @@ onMounted(() => {
   loadBuyerAds();
 
   window.addEventListener("search:changed", onSearchChanged);
+  window.addEventListener("category:changed", onCategoryChanged);
   window.addEventListener("sellerad:created", onSellerCreated);
   window.addEventListener("buyerad:created", onBuyerCreated);
 });
@@ -143,6 +150,7 @@ onUnmounted(() => {
   window.removeEventListener("search:changed", onSearchChanged);
   window.removeEventListener("sellerad:created", onSellerCreated);
   window.removeEventListener("buyerad:created", onBuyerCreated);
+  window.removeEventListener("category:changed", onCategoryChanged);
 });
 </script>
 

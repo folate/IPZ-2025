@@ -24,7 +24,7 @@ vue.onMounted(() => {
 const schema = yup.object({
   title: yup.string().required("Title is required"),
   description: yup.string().required("Description is required"),
-  categories: yup.string().required("Please select a category"),
+  categories: yup.string().required("Category is required"),
   tiers: yup
     .array()
     .of(
@@ -33,7 +33,7 @@ const schema = yup.object({
         price: yup
           .number()
           .typeError("Price must be a number")
-          .required("Price required")
+          .required("Price is required")
           .positive("Price must be positive"),
         description: yup.string().required("Tier Description required"),
       }),
@@ -66,8 +66,8 @@ const onSubmit = async (values) => {
       return;
     }
 
-    const result = await response.text();
-    console.log("Success:", result);
+    console.log("Success:", adId);
+
     emit("close");
   } catch (err) {
     console.error("Submission Error:", err);
@@ -88,7 +88,7 @@ const onSubmit = async (values) => {
           :validation-schema="schema"
           :initial-values="{ tiers: [{ name: '', price: 0, description: '' }] }"
           @submit="onSubmit"
-          v-slot="{ values }"
+          v-slot="{ values, setFieldValue }"
         >
           <div id="fields-flex">
             <div class="field-group">
@@ -114,7 +114,10 @@ const onSubmit = async (values) => {
               </Field>
               <ErrorMessage name="categories" class="error-text" />
             </div>
-
+            <div class="field-group">
+              <input type="file" accept="image/*" multiple />
+              <ErrorMessage name="images" class="error-text" />
+            </div>
             <hr />
             <h3>Tiers</h3>
 

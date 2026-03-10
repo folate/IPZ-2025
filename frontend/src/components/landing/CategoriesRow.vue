@@ -7,6 +7,7 @@ import * as vue from "vue";
 const categoryList = vue.ref([]);
 const TopcategoryList = vue.ref([]);
 const isOpen = vue.ref(false);
+const CategoryChosen = vue.ref(false);
 const fetchTopCategories = async () => {
   try {
     const response = await fetch("/api/Category/top");
@@ -39,6 +40,21 @@ function toggle() {
 }
 function close() {
   isOpen.value = false;
+}
+
+function CategoryChoice(categoryName) {
+  isOpen.value = false;
+  if (CategoryChosen.value === categoryName) {
+    CategoryChosen.value = "";
+  } else {
+    CategoryChosen.value = categoryName;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("category:changed", {
+      detail: CategoryChosen.value,
+    }),
+  );
 }
 
 //zamknięcie poza kategorią
@@ -77,7 +93,7 @@ const sortedTopCategories = useSortedCategories(TopcategoryList);
               :key="category.name"
               :value="category.name"
               class="dropItem"
-              @click="pick(category.name)"
+              @click="CategoryChoice(category.name)"
             >
               {{ category.name }}
             </button>
@@ -89,7 +105,8 @@ const sortedTopCategories = useSortedCategories(TopcategoryList);
           :key="category.name"
           :value="category.name"
           class="tile"
-          @click="pick(category.name)"
+          :class="{ 'Is-Active': activeCategory === category.name }"
+          @click="CategoryChoice(category.name)"
         >
           <div class="cat">{{ category.name }}</div>
         </button>
