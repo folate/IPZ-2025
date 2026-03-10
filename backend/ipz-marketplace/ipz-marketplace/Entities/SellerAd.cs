@@ -17,4 +17,5 @@ public class SellerAd
     public User Freelancer { get; set; }
     [Required]
     public ICollection<Gigs> Gigs { get; set; } = new List<Gigs>();
+    public ICollection<AdPhoto> Photos { get; set; } = new List<AdPhoto>();
 }
