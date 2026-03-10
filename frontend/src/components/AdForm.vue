@@ -24,7 +24,7 @@ vue.onMounted(() => {
 const schema = yup.object({
   title: yup.string().required("Title is required"),
   description: yup.string().required("Description is required"),
-  categories: yup.string().required("Please select a category"),
+  categories: yup.string().required("Category is required"),
   tiers: yup
     .array()
     .of(
@@ -33,7 +33,7 @@ const schema = yup.object({
         price: yup
           .number()
           .typeError("Price must be a number")
-          .required("Price required")
+          .required("Price is required")
           .positive("Price must be positive"),
         description: yup.string().required("Tier Description required"),
       }),
@@ -114,7 +114,9 @@ const onSubmit = async (values) => {
               </Field>
               <ErrorMessage name="categories" class="error-text" />
             </div>
-
+            <div class="field-group">
+              <input type="file" accept="image/*" multiple />
+            </div>
             <hr />
             <h3>Tiers</h3>
 
