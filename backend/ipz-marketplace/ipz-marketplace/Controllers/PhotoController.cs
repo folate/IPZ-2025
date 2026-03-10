@@ -1,5 +1,6 @@
 ﻿using ipz_marketplace.Entities;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.WebSockets;
 
 namespace ipz_marketplace.Controllers
 {
@@ -16,6 +17,8 @@ namespace ipz_marketplace.Controllers
         [HttpPut("upload")]
         public async Task<IActionResult> AddPhoto(int AdId, IFormFile file)
         {
+            if (file == null || file.Length == 0) return BadRequest("Problem with sending file.");
+
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "photos");
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
@@ -29,14 +32,31 @@ namespace ipz_marketplace.Controllers
             {
                 Url = $"/photos/{fileName}",
                 IsMain = true,
-                SellerAdId = AdId,
-                SellerAd = _context.SellerAds.FirstOrDefault(ad => ad.Id == AdId)
+                SellerAdId = AdId
             };
 
             _context.Photos.Add(photo);
             await _context.SaveChangesAsync();
 
-            return Ok("Photo added successfully");
+            return Ok("Photo added successfully!");
+        }
+
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetPhoto(int AdId)
+        {
+            var photos = _context.Photos
+                .Where(p => p.SellerAdId == AdId)
+                .Select(p => new
+            {
+                p.Id,
+                p.Url,
+                p.IsMain
+            }).ToList();
+
+            if (photos.Any()) 
+                return Ok(photos);
+
+            return BadRequest("No photos where found");
         }
     }
 }
