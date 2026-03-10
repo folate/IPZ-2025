@@ -15,64 +15,27 @@ namespace ipz_marketplace.Controllers
         }
 
         [HttpGet]
-        public ActionResult Index([FromQuery] string search, [FromQuery] string category)
+        public async Task<IActionResult> Index([FromQuery] string? search, [FromQuery] string? category)
         {
-            if(category == null)
+            var query = _context.SellerAds.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                var content = _context.SellerAds
-                               .AsNoTracking()
-                               .Select(
-                                   a => new ListingSellerAdDTO
-                                   {
-                                       Id = a.Id,
-                                       Title = a.Title,
-                                       Description = a.Description,
-                                       Freelancer = a.Freelancer.UserName,
-                                       Category = a.Category,
-                                       Gigs = a.Gigs.Select(g => new GigsDTO
-                                       {
-                                           Id = g.Id,
-                                           TierName = g.TierName,
-                                           TierDescription = g.TierDescription,
-                                           Price = g.Price
-                                       }).ToList()
-                                   })
-                               .Where(p => EF.Functions.ILike(p.Title, $"%{search}%")
-                               || EF.Functions.ILike(p.Description, $"%{search}%"))
-                               .Take(10)
-                               .ToList();
-                if (content != null)
-                    return Ok(content);
+                query = query.Where(p => EF.Functions.ILike(p.Title, $"%{search}%")
+                                || EF.Functions.ILike(p.Description, $"%{search}%"));
             }
-            else
+
+            if (!string.IsNullOrWhiteSpace(category))
             {
-                var content = _context.SellerAds
-                               .AsNoTracking()
-                               .Select(
-                                   a => new ListingSellerAdDTO
-                                   {
-                                       Id = a.Id,
-                                       Title = a.Title,
-                                       Description = a.Description,
-                                       Freelancer = a.Freelancer.UserName,
-                                       Category = a.Category,
-                                       Gigs = a.Gigs.Select(g => new GigsDTO
-                                       {
-                                           Id = g.Id,
-                                           TierName = g.TierName,
-                                           TierDescription = g.TierDescription,
-                                           Price = g.Price
-                                       }).ToList()
-                                   })
-                               .Where(p => EF.Functions.ILike(p.Title, $"%{search}%")
-                               || EF.Functions.ILike(p.Description, $"%{search}%")
-                               && p.Category == category)
-                               .Take(10)
-                               .ToList();
-                if (content != null)
-                    return Ok(content);
+                query = query.Where(p => p.Category == category);
             }
-            return BadRequest();
+
+            var content = await query.ToListAsync();
+
+            if (content != null) 
+                return Ok(content);
+
+            return NotFound();
         }
     }
 }

@@ -47,8 +47,8 @@ namespace ipz_marketplace.Controllers
             return Ok("Sucessfuly created!");
         }
 
-        [HttpGet("{name}")]
-        public async Task<IActionResult> GetBuyerAd([FromRoute] string name)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetBuyerAd([FromRoute] int id)
         {
             var ad = _context.BuyerAds.Select(a => new ListingBuyerAdDTO
             {
@@ -60,7 +60,7 @@ namespace ipz_marketplace.Controllers
                 Deadline = a.Deadline,
                 Category = a.Category,
                 Budget = a.Budget,
-            }).FirstOrDefault(a => a.BuyerName == name);
+            }).FirstOrDefault(a => a.Id == id);
 
             if (ad == null) return NoContent();
 
