@@ -66,8 +66,8 @@ const onSubmit = async (values) => {
       return;
     }
 
-    const result = await response.text();
-    console.log("Success:", result);
+    console.log("Success:", adId);
+
     emit("close");
   } catch (err) {
     console.error("Submission Error:", err);
@@ -88,7 +88,7 @@ const onSubmit = async (values) => {
           :validation-schema="schema"
           :initial-values="{ tiers: [{ name: '', price: 0, description: '' }] }"
           @submit="onSubmit"
-          v-slot="{ values }"
+          v-slot="{ values, setFieldValue }"
         >
           <div id="fields-flex">
             <div class="field-group">
@@ -116,6 +116,7 @@ const onSubmit = async (values) => {
             </div>
             <div class="field-group">
               <input type="file" accept="image/*" multiple />
+              <ErrorMessage name="images" class="error-text" />
             </div>
             <hr />
             <h3>Tiers</h3>
