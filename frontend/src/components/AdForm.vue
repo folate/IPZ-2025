@@ -2,11 +2,11 @@
 import * as vue from "vue";
 import * as yup from "yup";
 import { Form, Field, ErrorMessage, FieldArray } from "vee-validate";
-
+import axios from "axios";
 defineProps(["isOpen"]);
 const emit = defineEmits(["close"]);
 const categoryList = vue.ref([]);
-
+const fileUpload = vue.ref(null);
 const fetchCategories = async () => {
   try {
     const response = await fetch("/api/category");
@@ -43,34 +43,33 @@ const schema = yup.object({
 
 const onSubmit = async (values) => {
   try {
-    const gigsPayload = values.tiers.map((tier) => ({
-      TierName: tier.name,
-      TierDescription: tier.description,
-      Price: tier.price,
-    }));
+    const ImageFiles = fileUpload.value?.files;
+    const formData = new FormData();
+    formData.append("Title", values.title);
+    formData.append("Description", values.description);
+    formData.append("Category", values.categories);
 
-    const response = await fetch("/api/sellerad/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Title: values.title,
-        Description: values.description,
-        Category: values.categories,
-        Gigs: gigsPayload,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server Error:", response.status, errorText);
-      return;
+    if (ImageFiles && ImageFiles.length > 0) {
+      Array.from(ImageFiles).forEach((file) => {
+        formData.append("Photos", file);
+      });
     }
 
-    console.log("Success:", adId);
-
+    values.tiers.forEach((tier, index) => {
+      formData.append(`Gigs[${index}].TierName`, tier.name);
+      formData.append(`Gigs[${index}].TierDescription`, tier.description);
+      formData.append(`Gigs[${index}].Price`, tier.price);
+    });
+    await axios.post("/api/sellerad/create", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    console.log("YESSS");
     emit("close");
   } catch (err) {
-    console.error("Submission Error:", err);
+    if (err.response?.status === 400) {
+      const validationErrors = err.response.data.errors;
+      setFieldErrors(validationErrors);
+    }
   }
 };
 </script>
@@ -88,7 +87,7 @@ const onSubmit = async (values) => {
           :validation-schema="schema"
           :initial-values="{ tiers: [{ name: '', price: 0, description: '' }] }"
           @submit="onSubmit"
-          v-slot="{ values, setFieldValue }"
+          v-slot="{ values }"
         >
           <div id="fields-flex">
             <div class="field-group">
@@ -115,7 +114,7 @@ const onSubmit = async (values) => {
               <ErrorMessage name="categories" class="error-text" />
             </div>
             <div class="field-group">
-              <input type="file" accept="image/*" multiple />
+              <input type="file" accept="image/*" multiple ref="fileUpload" />
               <ErrorMessage name="images" class="error-text" />
             </div>
             <hr />
