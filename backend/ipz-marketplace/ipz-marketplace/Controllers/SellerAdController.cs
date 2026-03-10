@@ -22,7 +22,7 @@ namespace ipz_marketplace.Controllers
 
         [Authorize(Roles = "Seller")]
         [HttpPost("create")]
-        public async Task<IActionResult> CreateAd([FromBody] SellerAdDTO adDto)
+        public async Task<IActionResult> CreateAd([FromForm] SellerAdDTO adDto)
         {
             var userId = _userManager.GetUserId(User);
             if (userId == null)
@@ -98,9 +98,9 @@ namespace ipz_marketplace.Controllers
                         Price = g.Price
                     }).ToList(),
                     Photos = a.Photos.Select(p => new AdPhoto
-                    {
-                        Id = p.Id,
-                        Url = p.Url
+                    { 
+                        Url = p.Url,
+                        IsMain = p.IsMain
                     }).ToList()
                 })
                 .FirstOrDefault(a => a.Id == id);
@@ -127,8 +127,8 @@ namespace ipz_marketplace.Controllers
                     }).ToList(),
                     Photos = a.Photos.Select(p => new AdPhoto
                     {
-                        Id = p.Id,
-                        Url = p.Url
+                        Url = p.Url,
+                        IsMain= p.IsMain
                     }).ToList()
                 })
                 .Take(number)
@@ -163,8 +163,8 @@ namespace ipz_marketplace.Controllers
                     }).ToList(),
                     Photos = a.Photos.Select(p => new AdPhoto
                     {
-                        Id = p.Id,
-                        Url = p.Url
+                        Url = p.Url,
+                        IsMain = p.IsMain
                     }).ToList()
                 })
                 .ToList();
