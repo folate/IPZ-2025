@@ -6,18 +6,10 @@ import OffersGrid from "../components/landing/OffersGrid.vue"
 </script>
 
 <template>
-  <main>
+  <main class="min-h-screen bg-background flex flex-col w-full">
     <LandingHeader />
     <LandingSearch />
     <CategoriesRow />
     <OffersGrid />
   </main>
 </template>
-
-<style scoped>
-main {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-</style>

@@ -147,38 +147,60 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="offersSection">
-    <h2 class="offersTitle">Oferty</h2>
+  <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        Polecane Oferty
+      </h2>
+    </div>
 
-    <p v-if="loading" class="offersInfo">Ładowanie...</p>
-    <p v-else-if="error" class="offersError">{{ error }}</p>
-    <p v-else-if="filteredOffers.length === 0" class="offersInfo">
-      Brak ofert.
-    </p>
+    <div v-if="loading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>
+    </div>
+    
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-6 rounded-2xl text-center border border-red-100 dark:border-red-900/30">
+      <p class="font-medium">{{ error }}</p>
+    </div>
+    
+    <div v-else-if="filteredOffers.length === 0" class="bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center rounded-2xl border border-zinc-200 dark:border-zinc-800">
+      <p class="text-zinc-500 dark:text-zinc-400 text-lg">Brak dostępnych ofert w tym momencie.</p>
+    </div>
 
-    <div class="offersGrid">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <RouterLink
         v-for="o in filteredOffers"
         :key="o.id"
         :to="`/offer/${o.id}`"
+        class="block h-full"
       >
         <OfferCard :offer="o" />
       </RouterLink>
     </div>
 
-    <h2 class="offersTitle" style="margin-top: 50px">Zlecenia klientów</h2>
+    <div class="flex items-center justify-between mb-8 mt-16">
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        Zlecenia klientów
+      </h2>
+    </div>
 
-    <p v-if="buyerLoading" class="offersInfo">Ładowanie...</p>
-    <p v-else-if="buyerError" class="offersError">{{ buyerError }}</p>
-    <p v-else-if="filteredBuyerAds.length === 0" class="offersInfo">
-      Brak zleceń.
-    </p>
+    <div v-if="buyerLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>
+    </div>
+    
+    <div v-else-if="buyerError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-6 rounded-2xl text-center border border-red-100 dark:border-red-900/30">
+      <p class="font-medium">{{ buyerError }}</p>
+    </div>
+    
+    <div v-else-if="filteredBuyerAds.length === 0" class="bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center rounded-2xl border border-zinc-200 dark:border-zinc-800">
+      <p class="text-zinc-500 dark:text-zinc-400 text-lg">Brak dostępnych zleceń w tym momencie.</p>
+    </div>
 
-    <div class="offersGrid">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <RouterLink
         v-for="o in filteredBuyerAds"
         :key="o.id"
         :to="`/request/${o.id}`"
+        class="block h-full"
       >
         <OfferCard :offer="o" />
       </RouterLink>
