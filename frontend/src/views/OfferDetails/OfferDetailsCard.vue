@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import LandingHeader from "@/components/landing/LandingHeader.vue";
 import Container from "@/components/ui/Container.vue";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Heart, Loader2, User, Image as ImageIcon, Check } from "lucide-vue-next
 import offerImage from "../../../public/Placeholders/offerImage.png";
 
 const route = useRoute();
+const router = useRouter();
 const offerDetails = ref(null);
 const error = ref("");
 const isFav = ref(false);
@@ -45,27 +46,16 @@ function checkFavs() {
 }
 
 async function buyTier(tier) {
-  console.log(tier.id, " tier bought:", tier.tierName, " ", tier.price, "zł");
-  try {
-    const res = await fetch(`/api/Order/create`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        quantity: 1,
-        price: tier.price,
-        additionalInstructions: "None",
-        gigId: tier.id,
-        sellerId: offerDetails.value.freelancerId,
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(`Błąd zakupu (${res.status})`);
+  router.push({
+    name: 'payment',
+    query: {
+      gigId: tier.id,
+      sellerId: offerDetails.value.freelancerId,
+      price: tier.price,
+      tierName: tier.tierName,
+      title: offerDetails.value.title
     }
-    console.log("bought succesfully");
-    alert(`Zakupiono pakiet: ${tier.tierName}`);
-  } catch (err) {
-    error.value = err.message;
-  }
+  });
 }
 
 function addFavorites() {
