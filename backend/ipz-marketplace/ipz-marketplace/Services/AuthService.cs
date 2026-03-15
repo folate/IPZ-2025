@@ -2,8 +2,6 @@
 using ipz_marketplace.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
 
 namespace ipz_marketplace.Services
 {
@@ -19,12 +17,14 @@ namespace ipz_marketplace.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly SignInManager<User> _signInManager;
         private readonly MarketplaceDbContext _context;
-        public AuthService(IServiceProvider serviceProvider, SignInManager<User> signInManager, MarketplaceDbContext context)
+        private readonly EmailService _emailService;
+        public AuthService(IServiceProvider serviceProvider, SignInManager<User> signInManager, MarketplaceDbContext context, EmailService emailService)
         {
             _serviceProvider = serviceProvider;
             _userManager = _serviceProvider.GetRequiredService<UserManager<User>>();
             _signInManager = signInManager;
             _context = context;
+            _emailService = emailService;
         }
 
         public async Task<IActionResult> Modify(UserModifyDTO userInfo)
@@ -65,7 +65,7 @@ namespace ipz_marketplace.Services
 
             if (result.Succeeded)
             {
-                if(userInfo.isFreelancer)
+                if (userInfo.isFreelancer)
                     await _userManager.AddToRoleAsync(newUser, "Seller");
                 else
                     await _userManager.AddToRoleAsync(newUser, "Buyer");
@@ -82,6 +82,8 @@ namespace ipz_marketplace.Services
                 await _context.SaveChangesAsync();
 
                 await _signInManager.SignInAsync(newUser, isPersistent: true);
+
+                await _emailService.EmailConnection(userInfo.Email, "Thank you for creating account!", $"Like the title says, thank you {newUser.UserName} for creaing account. Hope you enjoy our services!");
                 return new OkObjectResult("User sucessfuly registered!");
             }
             return new BadRequestObjectResult(result.Errors);
@@ -94,7 +96,7 @@ namespace ipz_marketplace.Services
             {
                 return null;
             }
-            
+
             var result = await _signInManager.PasswordSignInAsync(userLogin, password, isPersistent: doNotLogout, lockoutOnFailure: false);
             if (!result.Succeeded)
             {
@@ -102,11 +104,11 @@ namespace ipz_marketplace.Services
             }
 
             return new LoginResponse
-                {
-                    Username = userLogin.UserName,
-                    Email = userLogin.Email,
-                    Roles = (List<string>)await _userManager.GetRolesAsync(userLogin)
-                };
+            {
+                Username = userLogin.UserName,
+                Email = userLogin.Email,
+                Roles = (List<string>)await _userManager.GetRolesAsync(userLogin)
+            };
         }
     }
 }

@@ -14,10 +14,12 @@ namespace ipz_marketplace.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly MarketplaceDbContext _context;
-        public SellerAdController(UserManager<User> userManager, MarketplaceDbContext context)
+        private readonly EmailService _emailService;
+        public SellerAdController(UserManager<User> userManager, MarketplaceDbContext context, EmailService emailService)
         {
             _userManager = userManager;
             _context = context;
+            _emailService = emailService;
         }
 
         [Authorize(Roles = "Seller")]
@@ -28,6 +30,13 @@ namespace ipz_marketplace.Controllers
             if (userId == null)
             {
                 return Unauthorized("userId went wrong!");
+            }
+
+            var logged = await _userManager.FindByIdAsync(userId);
+
+            if (logged == null)
+            {
+                return NotFound("user was not found!");
             }
 
             var photosFile = new List<AdPhoto>();
@@ -72,6 +81,8 @@ namespace ipz_marketplace.Controllers
                 }).ToList(),
                 Photos = photosFile
             };
+
+            await _emailService.EmailConnection(logged.Email, "Sucessfuly created Ad!", $"Thank you {logged.UserName} for creating Ad for our service.");
 
             _context.SellerAds.Add(ad);
             await _context.SaveChangesAsync();
@@ -132,6 +143,7 @@ namespace ipz_marketplace.Controllers
                     }).ToList()
                 })
                 .Take(number)
+                .OrderBy(a => a.Id)
                 .ToList();
 
             return Ok(sellerAds);

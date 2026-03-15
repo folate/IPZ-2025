@@ -14,3 +14,7 @@ COPY --from=build /app/publish .
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "ipz-marketplace.dll"]
+
+WORKDIR /app
+RUN mkdir -p wwwroot 
+COPY . .

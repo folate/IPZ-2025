@@ -1,4 +1,5 @@
-﻿using ipz_marketplace.DTOs;
+﻿using FluentEmail.Core.Models;
+using ipz_marketplace.DTOs;
 using ipz_marketplace.Entities;
 using ipz_marketplace.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +15,12 @@ namespace ipz_marketplace.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly MarketplaceDbContext _context;
-        public BuyerAdController(UserManager<User> userManager, MarketplaceDbContext context)
+        private readonly EmailService _emailService;
+        public BuyerAdController(UserManager<User> userManager, MarketplaceDbContext context, EmailService emailService)
         {
             _userManager = userManager;
             _context = context;
+            _emailService = emailService;
         }
 
         [Authorize(Roles = "Buyer")]
@@ -30,16 +33,24 @@ namespace ipz_marketplace.Controllers
                 return Unauthorized("userId went wrong!");
             }
 
+            var logged = await _userManager.FindByIdAsync(userId);
+            if(logged == null)
+            {
+                return NotFound();
+            }
+
             var ad = new BuyerAd
             {
                 Title = adDto.Title,
                 Description = adDto.Description,
-                Buyer = await _userManager.FindByIdAsync(userId),
+                Buyer = logged,
                 CreateDate = DateTime.UtcNow,
                 Deadline = adDto.Deadline,
                 Category = adDto.Category,
                 Budget = adDto.Budget
             };
+
+            await _emailService.EmailConnection(logged.Email, "Sucessfuly created Ad!", $"Thank you {logged.UserName} for creating Ad for our service.");
 
             _context.BuyerAds.Add(ad);
             await _context.SaveChangesAsync();

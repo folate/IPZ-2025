@@ -1,9 +1,11 @@
+using ipz_marketplace.Controllers;
 using ipz_marketplace.Data;
 using ipz_marketplace.Entities;
 using ipz_marketplace.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 namespace ipz_marketplace;
 
@@ -44,6 +46,8 @@ public class Program
                       .AllowCredentials();
             });
         });
+
+        builder.Services.AddSingleton<EmailService>();
 
         builder.Services.AddDbContext<MarketplaceDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
         builder.Services.AddDataProtection();
@@ -112,9 +116,24 @@ public class Program
             });
         }
 
-        app.UseCors();
-
         app.UseStaticFiles();
+
+        var photosPath = Path.Combine(Directory.GetCurrentDirectory(), "photos");
+        Console.WriteLine($"Photos path: {photosPath}");
+        if (!Directory.Exists(photosPath))
+        {
+            Directory.CreateDirectory(photosPath);
+        }
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(photosPath),
+            RequestPath = "/photos"
+        });
+
+        app.UseRouting();
+
+        app.UseCors();
 
         app.UseHttpsRedirection();
 
