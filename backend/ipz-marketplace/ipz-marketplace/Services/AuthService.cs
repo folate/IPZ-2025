@@ -66,7 +66,15 @@ namespace ipz_marketplace.Services
             if (result.Succeeded)
             {
                 if (userInfo.isFreelancer)
+                {
                     await _userManager.AddToRoleAsync(newUser, "Seller");
+                    var seller = new Seller
+                    {
+                        UserId = newUser.Id,
+                        JoinedDate = DateTime.UtcNow,
+                        Bio = "This is my bio"
+                    };
+                }
                 else
                     await _userManager.AddToRoleAsync(newUser, "Buyer");
 

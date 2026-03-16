@@ -15,6 +15,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                             .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
+                             .AddEnvironmentVariables();
+
         var keysDirectory = new DirectoryInfo("/root/.aspnet/DataProtection-Keys");
         // var keysDirectory = new DirectoryInfo("../../keys/DataProtection-Keys");
 
@@ -48,6 +52,8 @@ public class Program
         });
 
         builder.Services.AddSingleton<EmailService>();
+
+        builder.Services.AddSingleton<OrderService>();
 
         builder.Services.AddDbContext<MarketplaceDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
         builder.Services.AddDataProtection();

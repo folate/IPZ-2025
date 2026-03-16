@@ -68,6 +68,15 @@ public class DatabaseSeeder
                 if (user.UserName == "freelancer")
                 {
                     await userManager.AddToRoleAsync(user, "Seller");
+
+                    var seller = new Seller
+                    {
+                        UserId = user.Id,
+                        User = user,
+                        Bio = "Experienced web developer with a passion for creating dynamic and responsive websites. AI powered",
+                        IsAvailable = true
+                    };
+
                     var sellerAd = new SellerAd
                     {
                         Title = "Test Seller Ad",
@@ -98,6 +107,15 @@ public class DatabaseSeeder
                         SellerAd = sellerAd
                     };
                     context.Gigs.Add(gig2);
+
+                    var photo = new AdPhoto
+                    {
+                        Url = "firstphoto.png",
+                        IsMain = true,
+                        SellerAdId = sellerAd.Id,
+                        SellerAd = sellerAd
+                    };
+                    context.Photos.Add(photo);
                 }
                 else
                 {
