@@ -39,7 +39,7 @@ const onSubmit = async (values) => {
     }
 
     const result = await response.text();
-    console.log("Success:", result);
+
     emit("close");
   } catch (err) {
     console.error("Network Error:", err);

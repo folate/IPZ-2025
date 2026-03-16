@@ -88,7 +88,7 @@ function addFavorites() {
         <img
           v-for="photo in offerDetails.photos"
           :key="photo.id"
-          :src="photo.url"
+          :src="`http://localhost/photos/${photo.url}`"
         />
         <p class="Description">{{ offerDetails.description }}</p>
         <p class="Username">{{ offerDetails.freelancer }}</p>
