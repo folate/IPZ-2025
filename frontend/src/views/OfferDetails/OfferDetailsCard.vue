@@ -84,7 +84,12 @@ function addFavorites() {
         >
           Favorite!
         </button>
-        <img :src="offerImage" alt="Offer Image" />
+        <!-- <img :src="offerDetails.url" alt="Offer Image" /> -->
+        <img
+          v-for="photo in offerDetails.photos"
+          :key="photo.id"
+          :src="photo.url"
+        />
         <p class="Description">{{ offerDetails.description }}</p>
         <p class="Username">{{ offerDetails.freelancer }}</p>
         <div class="Tiers">
