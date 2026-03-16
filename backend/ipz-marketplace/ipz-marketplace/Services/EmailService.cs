@@ -17,6 +17,7 @@ namespace ipz_marketplace.Services
 
         public async Task EmailConnection(string to, string subject, string body) 
         {
+            return;
             var message = new MimeMessage();
 
             var fromAddress = _config["EmailSettings:Email"];

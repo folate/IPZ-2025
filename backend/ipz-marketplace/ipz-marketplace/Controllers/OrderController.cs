@@ -18,6 +18,23 @@ namespace ipz_marketplace.Controllers
             _userManager = userManager;
         }
 
+        [HttpGet("getToken")]
+        public async Task<string> GetAccessToken()
+        {
+            var client = new HttpClient();
+            var requestData = new Dictionary<string, string>
+            {
+                { "grant_type", "client_credentials" },
+                { "client_id", "" },
+                { "client_secret", "" }
+            };
+            var response = await client.PostAsync("https://secure.snd.payu.com/pl/standard/user/oauth/authorize", 
+                new FormUrlEncodedContent(requestData));
+
+            var json = await response.Content.ReadAsStringAsync();
+            return json;
+        }
+
         [Authorize(Roles = "Buyer")]
         [HttpPut("create")]
         public async Task<IActionResult> createOrder([FromBody] OrderCreateDTO order)
