@@ -23,43 +23,43 @@ namespace ipz_marketplace.Controllers
         }
 
         
-        public async Task<IActionResult> GetAccessToken(OrderCreateDTO order)
-        {
-            var token = await _orderService.GetAccessToken();
-            var client = new HttpClient();
-            var actionResult = await createOrder(order);
-            var newOrder = new Order();
+        //public async Task<IActionResult> GetAccessToken(OrderCreateDTO order)
+        //{
+        //    var token = await _orderService.GetAccessToken();
+        //    var client = new HttpClient();
+        //    var actionResult = await createOrder(order);
+        //    var newOrder = new Order();
 
-            if (actionResult is OkObjectResult okResult)
-            {
-                newOrder = okResult.Value as Order;
-                if(newOrder == null)
-                {
-                    return BadRequest("Cannot create order");
-                }
-            }
-            else
-            {
-                return BadRequest("Cannot create order");
-            }
+        //    if (actionResult is OkObjectResult okResult)
+        //    {
+        //        newOrder = okResult.Value as Order;
+        //        if(newOrder == null)
+        //        {
+        //            return BadRequest("Cannot create order");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Cannot create order");
+        //    }
             
-            var payuOrder = new
-            {
-                customerIp = "127.0.0.1",
-                merchantPosId = newOrder.SellerId,
-                description = $"Payment for order by Id: {newOrder.Id}",
-                currencyCode = "PLN",
-                totalAmount = newOrder.Price + "00",
-                products = new[]
-                {
-                    new { name = $"Gig id: {newOrder.GigsId}", unitPrice = newOrder.Price + "00", quantity = "1" }
-                }
-            };
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            var response = await client.PostAsJsonAsync("https://secure.payu.com/api/v2_1/orders", order);
+        //    var payuOrder = new
+        //    {
+        //        customerIp = "127.0.0.1",
+        //        merchantPosId = newOrder.SellerId,
+        //        description = $"Payment for order by Id: {newOrder.Id}",
+        //        currencyCode = "PLN",
+        //        totalAmount = newOrder.Price + "00",
+        //        products = new[]
+        //        {
+        //            new { name = $"Gig id: {newOrder.GigsId}", unitPrice = newOrder.Price + "00", quantity = "1" }
+        //        }
+        //    };
+        //    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        //    var response = await client.PostAsJsonAsync("https://secure.payu.com/api/v2_1/orders", order);
 
-            return Ok(response);
-        }
+        //    return Ok(response);
+        //}
 
         [Authorize(Roles = "Buyer")]
         [HttpPut("create")]
