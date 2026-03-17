@@ -12,8 +12,8 @@ using ipz_marketplace;
 namespace ipz_marketplace.Migrations
 {
     [DbContext(typeof(MarketplaceDbContext))]
-    [Migration("20260316210201_nnnnn")]
-    partial class nnnnn
+    [Migration("20260317153620_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
