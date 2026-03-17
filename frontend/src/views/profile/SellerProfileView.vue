@@ -1,448 +1,231 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import LandingHeader from "@/components/landing/LandingHeader.vue";
-import OfferCard from "@/components/landing/OfferCard.vue";
 import { useRouter } from "vue-router";
+import { Search, Heart, MessageCircle, Star, AlertTriangle, User, Calendar, MapPin, Briefcase } from "lucide-vue-next";
+
+import LandingHeader from "../../components/landing/LandingHeader.vue";
+import Container from "../../components/ui/Container.vue";
+import OfferCard from "@/components/landing/OfferCard.vue";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const router = useRouter();
-
 const activeTab = ref("offers");
 const loading = ref(false);
 const error = ref("");
+const searchText = ref("");
+const isFavourite = ref(false);
 
 const me = ref(null);
 const offers = ref([]);
-
-const categories = ref([]);
-const selectedCategory = ref("all");
-
-const searchText = ref("");
-
-const displayName = computed(() => me.value?.login ?? "NAME");
+const displayName = computed(() => me.value?.login ?? "Sprzedawca");
 
 function offerOwnerLogin(o) {
-  return (
-    o?.freelancer ??
-    o?.freelancerLogin ??
-    o?.seller ??
-    o?.sellerLogin ??
-    o?.login ??
-    null
-  );
+  return o?.freelancer ?? o?.freelancerLogin ?? o?.seller ?? o?.sellerLogin ?? o?.login ?? null;
 }
 
 const filteredOffers = computed(() => {
   const q = searchText.value.trim().toLowerCase();
-  const cat = selectedCategory.value;
-
-  return (offers.value || []).filter((o) => {
-    if (cat !== "all") {
-      const offerCat = String(o?.category ?? "").trim();
-      if (offerCat !== cat) return false;
-    }
-
-    if (!q) return true;
-
-    const title = String(o?.title ?? "").toLowerCase();
-    const desc = String(o?.description ?? "").toLowerCase();
-
-    return title.includes(q) || desc.includes(q);
+  if (!q) return offers.value || [];
+  return (offers.value || []).filter(o => {
+    return String(o?.title ?? "").toLowerCase().includes(q) || String(o?.description ?? "").toLowerCase().includes(q);
   });
 });
 
 async function load() {
   loading.value = true;
   error.value = "";
-  me.value = null;
-  offers.value = [];
-
   try {
-    const resUser = await fetch("/api/User/getUser", {
-      credentials: "include",
-    });
-
-    if (!resUser.ok) {
-      error.value = "Nie jesteś zalogowany.";
-      return;
-    }
-
+    const resUser = await fetch("/api/User/getUser", { credentials: "include" });
+    if (!resUser.ok) throw new Error("Nie jesteś zalogowany.");
     const userData = await resUser.json();
     me.value = userData;
 
-    const login = userData?.login;
-    if (!login) {
-      error.value = "Brak loginu w getUser.";
-      return;
-    }
-
-    const resOffers = await fetch("/api/sellerad/all/200", {
-      credentials: "include",
-    });
-
-    if (!resOffers.ok) {
-      error.value = `Nie udało się pobrać ofert (${resOffers.status}).`;
-      return;
-    }
-
+    const resOffers = await fetch("/api/sellerad/all/200", { credentials: "include" });
+    if (!resOffers.ok) throw new Error("Błąd pobierania ofert.");
+    
     const all = await resOffers.json();
-    const list = Array.isArray(all) ? all : [];
-
-    offers.value = list.filter((o) => offerOwnerLogin(o) === login);
+    offers.value = (Array.isArray(all) ? all : []).filter(o => offerOwnerLogin(o) === userData.login);
   } catch (e) {
-    error.value = e?.message ?? "Błąd podczas pobierania profilu.";
+    error.value = e.message;
   } finally {
     loading.value = false;
   }
 }
 
-async function loadCategories() {
-  try {
-    const res = await fetch("/api/category", {
-      credentials: "include",
-    });
-
-    if (!res.ok) return;
-
-    const data = await res.json();
-    categories.value = Array.isArray(data) ? data : [];
-  } catch {
-    categories.value = [];
-  }
-}
-
-function selectCat(name) {
-  selectedCategory.value = name;
-}
-
-onMounted(async () => {
-  await Promise.all([load(), loadCategories()]);
+onMounted(() => {
+  load();
 });
+
+function onToggleFavourite() { isFavourite.value = !isFavourite.value; }
+function onChatClick() { console.log("chat click"); }
+
+// Mocks
+const reviewStats = { total: 42, avg: 4.8 };
+const reviews = [
+  { id: 1, user: "Jan", stars: 5, text: "Świetna współpraca, polecam z całego serca!" },
+  { id: 2, user: "Anna", stars: 4, text: "Dobry kontakt i wysoka jakość." },
+];
 </script>
 
 <template>
-  <div class="page">
+  <div class="min-h-svh bg-zinc-50 dark:bg-zinc-950 pb-20">
     <LandingHeader />
 
-    <div class="container">
-      <div class="banner">BANNER</div>
-
-      <div class="headerRow">
-        <div class="avatar"></div>
-
-        <div class="nameCol">
-          <div class="name">{{ displayName }}</div>
-          <div class="stars">★ ★ ★ ★ ★</div>
+    <Container>
+      <div class="mt-8 w-full flex flex-col gap-6">
+        
+        <!-- Action Header -->
+        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">Profil Wykonawcy</h1>
+            <p class="text-zinc-500 dark:text-zinc-400 mt-1">Przeglądaj oferty, kwalifikacje i opinie.</p>
+          </div>
+          <div class="flex items-center gap-3">
+             <Button variant="outline" @click="onToggleFavourite" class="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm gap-2">
+               <Heart class="h-4 w-4" :class="isFavourite ? 'fill-rose-500 text-rose-500' : 'text-zinc-500'" />
+               <span>{{ isFavourite ? 'Zapisano profil' : 'Zapisz profil' }}</span>
+             </Button>
+             <Button class="bg-teal-600 hover:bg-teal-700 text-white shadow-sm gap-2" @click="onChatClick">
+               <MessageCircle class="h-4 w-4" />
+               Napisz wiadomość
+             </Button>
+          </div>
         </div>
 
-        <div class="spacer"></div>
+        <!-- Main Info Card -->
+        <Card class="w-full shadow-lg shadow-teal-900/5 border-zinc-200 dark:border-zinc-800 overflow-hidden relative">
+          <CardContent class="p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+            <Avatar class="h-28 w-28 md:h-32 md:w-32 border-4 border-zinc-100 dark:border-zinc-900 shadow-xl bg-teal-50 dark:bg-teal-900/20">
+              <AvatarFallback class="text-4xl text-teal-700 dark:text-teal-400 font-bold bg-zinc-100 dark:bg-zinc-800">
+                {{ displayName.charAt(0).toUpperCase() }}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div class="flex-1 flex flex-col gap-4">
+              <div class="flex flex-col gap-1">
+                <h2 class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-zinc-50">
+                  {{ displayName }}
+                </h2>
+                <div class="flex items-center justify-center md:justify-start gap-2 text-zinc-600 dark:text-zinc-400 font-medium">
+                  <div class="flex items-center text-teal-600 dark:text-teal-400">
+                    <Star class="h-5 w-5 fill-current" />
+                    <span class="ml-1 text-zinc-900 dark:text-zinc-50 font-bold text-lg">{{ reviewStats.avg }}</span>
+                  </div>
+                  <span class="text-sm">({{ reviewStats.total }} wystawionych opinii)</span>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+                <div class="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                  <MapPin class="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+                  <div class="flex flex-col text-left">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Lokalizacja</span>
+                    <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Polska (Remote)</span>
+                  </div>
+                </div>
 
-        <div class="searchBox">
-          <input
-            v-model="searchText"
-            class="searchInput"
-            placeholder="Szukaj w moich ofertach..."
-          />
+                <div class="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                  <Calendar class="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+                  <div class="flex flex-col text-left">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Na platformie od</span>
+                    <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Styczeń 2024</span>
+                  </div>
+                </div>
 
-          <button class="searchBtn" type="button" aria-label="Szukaj">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-              <path
-                d="M16.5 16.5 21 21"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-            </svg>
-          </button>
-        </div>
+                <div class="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                  <Briefcase class="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+                  <div class="flex flex-col text-left">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Specjalizacja</span>
+                    <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Web Development</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <button class="circleBtn" type="button">
-          <img class="circleIcon" src="/icons/favourites.png" alt="heart" />
-        </button>
+        <!-- Tabs Content -->
+        <Card class="w-full shadow-lg shadow-teal-900/5 border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <Tabs defaultValue="offers" class="w-full h-full flex flex-col">
+            <div class="border-b border-zinc-200 dark:border-zinc-800 px-6 pt-4 bg-zinc-50/50 dark:bg-zinc-900/20">
+              <TabsList class="flex h-auto p-0 bg-transparent rounded-none gap-8">
+                <TabsTrigger value="offers" class="rounded-none border-b-2 border-transparent px-2 py-4 text-base font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:border-teal-600 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-none data-[state=active]:bg-transparent transition-colors">
+                  Oferty Wykonawcy
+                </TabsTrigger>
+                <TabsTrigger value="reviews" class="rounded-none border-b-2 border-transparent px-2 py-4 text-base font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:border-teal-600 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-none data-[state=active]:bg-transparent transition-colors">
+                  Opinie ({{ reviewStats.total }})
+                </TabsTrigger>
+                <TabsTrigger value="about" class="rounded-none border-b-2 border-transparent px-2 py-4 text-base font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:border-teal-600 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-none data-[state=active]:bg-transparent transition-colors">
+                  O profilu
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-        <button class="circleBtn" type="button">
-          <img class="circleIcon" src="/icons/chat.png" alt="chat" />
-        </button>
-      </div>
-
-      <div class="tabs">
-        <button
-          class="tab"
-          :class="{ active: activeTab === 'offers' }"
-          @click="activeTab = 'offers'"
-        >
-          offers
-        </button>
-        <button
-          class="tab"
-          :class="{ active: activeTab === 'reviews' }"
-          @click="activeTab = 'reviews'"
-        >
-          reviews
-        </button>
-        <button
-          class="tab"
-          :class="{ active: activeTab === 'description' }"
-          @click="activeTab = 'description'"
-        >
-          description
-        </button>
-      </div>
-
-      <div class="content">
-        <p v-if="loading" class="info">Ładowanie...</p>
-        <p v-else-if="error" class="error">{{ error }}</p>
-
-        <template v-else>
-          <div v-if="activeTab === 'offers'" class="offersTab">
-            <div class="offersLayout">
-              <aside class="cats">
-                <button
-                  type="button"
-                  class="catBtn"
-                  :class="{ active: selectedCategory === 'all' }"
-                  @click="selectCat('all')"
-                >
-                  all
-                </button>
-
-                <button
-                  v-for="c in categories"
-                  :key="c.name"
-                  type="button"
-                  class="catBtn"
-                  :class="{ active: selectedCategory === c.name }"
-                  @click="selectCat(c.name)"
-                >
-                  {{ c.name }}
-                </button>
-
-                <button
-                  type="button"
-                  @click="router.push('/buyer/profile/settings')"
-                >
-                  Settings!
-                </button>
-              </aside>
-
-              <section class="offersMain">
-                <div class="sectionTitle">Top offers</div>
-
-                <p v-if="filteredOffers.length === 0" class="info">
-                  Brak ofert.
-                </p>
-
-                <div class="offersGrid" v-else>
-                  <RouterLink
-                    v-for="o in filteredOffers"
-                    :key="o.id"
-                    :to="`/offer/${o.id}`"
-                    class="offerLink"
-                  >
+            <div class="p-6 md:p-8 flex-1">
+              <!-- Offers Tab -->
+              <TabsContent value="offers" class="m-0 focus-visible:outline-none flex flex-col gap-6">
+                <div class="relative w-full max-w-sm">
+                  <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <Input v-model="searchText" placeholder="Wyszukaj ofertę uwzględniając słowa kluczowe..." class="pl-9 h-11 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 rounded-xl" />
+                </div>
+                
+                <div v-if="loading" class="flex justify-center p-10"><div class="animate-spin h-8 w-8 border-4 border-teal-600 border-t-transparent rounded-full"></div></div>
+                <div v-else-if="error" class="p-4 bg-red-50 text-red-600 rounded-xl font-medium">{{error}}</div>
+                <div v-else-if="filteredOffers.length === 0" class="flex flex-col items-center justify-center p-10 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900/30 text-zinc-500">
+                  <Search class="h-10 w-10 mb-3 opacity-50" />
+                  <span class="font-medium text-lg text-zinc-900 dark:text-zinc-200">Brak ofert</span>
+                  <span class="text-sm">Ten wykonawca obecnie nie prowadzi żadnych projektów.</span>
+                </div>
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <RouterLink v-for="o in filteredOffers" :key="o.id" :to="`/offer/${o.id}`" class="block">
                     <OfferCard :offer="o" />
                   </RouterLink>
                 </div>
-              </section>
+              </TabsContent>
+
+              <!-- Reviews Tab -->
+              <TabsContent value="reviews" class="m-0 focus-visible:outline-none flex flex-col gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card v-for="r in reviews" :key="r.id" class="shadow-sm border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30">
+                    <CardContent class="p-6 flex flex-col gap-3">
+                      <div class="flex items-center justify-between">
+                         <span class="font-bold text-lg text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                           <Avatar class="h-8 w-8"><AvatarFallback class="bg-zinc-200 dark:bg-zinc-800 text-xs">{{ r.user.charAt(0) }}</AvatarFallback></Avatar>
+                           {{ r.user }}
+                         </span>
+                         <div class="flex items-center text-teal-600">
+                           <Star v-for="i in 5" :key="i" class="h-4 w-4" :class="i <= r.stars ? 'fill-current' : 'text-zinc-300 dark:text-zinc-700'" />
+                         </div>
+                      </div>
+                      <p class="text-zinc-700 dark:text-zinc-300">{{ r.text }}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <!-- About Tab -->
+              <TabsContent value="about" class="m-0 focus-visible:outline-none flex flex-col gap-6">
+                 <div class="prose dark:prose-invert max-w-4xl text-zinc-700 dark:text-zinc-300 text-lg leading-relaxed">
+                   <p>Cześć! Jestem doświadczonym web deweloperem, otwartym na nowe wyzwania z pasją do programowania.</p>
+                   <p>Dzięki wieloletniemu doświadczeniu buduję bardzo dobrze prosperujące sklepy i rozbudowane nowoczesne portale korzystając z nowoczesnych technologii (Vue, React, Node.js).</p>
+                 </div>
+                 
+                 <div class="mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                    <Button variant="ghost" class="text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" @click="$alert('Reported')">
+                      <AlertTriangle class="h-4 w-4 mr-2" /> Raportuj ten profil
+                    </Button>
+                 </div>
+              </TabsContent>
             </div>
-          </div>
+          </Tabs>
+        </Card>
 
-          <div v-else-if="activeTab === 'reviews'">
-            <p class="info">Tu będą reviews.</p>
-          </div>
-
-          <div v-else>
-            <p class="info">Tu będzie description.</p>
-          </div>
-        </template>
       </div>
-    </div>
+    </Container>
   </div>
 </template>
-
-<style scoped>
-.page {
-  min-height: 100vh;
-  background: #3f4a4d;
-}
-
-.container {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 22px 16px 60px;
-}
-
-.banner {
-  height: 260px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  display: flex;
-  align-items: center;
-  padding-left: 56px;
-  font-size: 140px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.18);
-}
-
-.headerRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 18px;
-}
-
-.avatar {
-  width: 86px;
-  height: 86px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.35);
-}
-
-.nameCol {
-  display: flex;
-  flex-direction: column;
-}
-
-.name {
-  font-size: 44px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.nameCol .stars {
-  position: static !important;
-  margin-top: 10px;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 3px;
-}
-
-.spacer {
-  flex: 1;
-}
-
-.searchBox {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.searchInput {
-  width: 340px;
-  height: 38px;
-  border-radius: 9px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  padding: 0 12px;
-  outline: none;
-}
-
-.searchBtn {
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.75);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.searchBtn svg {
-  color: rgba(0, 0, 0, 0.55);
-}
-
-.circleBtn {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.75);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.circleIcon {
-  width: 22px;
-  height: 22px;
-}
-
-.tabs {
-  display: flex;
-  gap: 18px;
-  margin-top: 18px;
-}
-
-.tab {
-  background: transparent;
-  border: none;
-  font-size: 28px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
-  cursor: pointer;
-}
-
-.tab.active {
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: underline;
-}
-
-.offersLayout {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 18px;
-  margin-top: 12px;
-}
-
-.cats {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-top: 6px;
-}
-
-.catBtn {
-  background: transparent;
-  border: none;
-  padding: 0;
-  text-align: left;
-  font-size: 22px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
-  cursor: pointer;
-}
-
-.catBtn.active {
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: underline;
-}
-
-.sectionTitle {
-  font-size: 40px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 8px 0 14px;
-}
-
-.offersGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
-}
-
-.offerLink {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-}
-
-.info {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.error {
-  color: #ffb4b4;
-}
-</style>
