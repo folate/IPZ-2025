@@ -30,6 +30,10 @@
 
   --border-heavy: 3px solid rgba(0, 0, 0, 0.18);
 }
+button.Is-Active {
+  background-color: red;
+}
+
 /* Offer Details */
 .detailsPage .Fav {
   background-color: red;

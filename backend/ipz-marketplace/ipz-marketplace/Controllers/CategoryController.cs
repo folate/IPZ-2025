@@ -27,6 +27,21 @@ namespace ipz_marketplace.Controllers
             return Ok(result);
         }
 
+        [HttpGet("top")]
+        public IActionResult GetTop()
+        {
+            var topCategories = _context.Categories
+                .Select(c => new 
+                {
+                    c.Name,
+                    AdsCount = _context.SellerAds.Count(a => a.Category == c.Name) + _context.BuyerAds.Count(a => a.Category == c.Name)
+                })
+                .OrderByDescending(c => c.AdsCount)
+                .Take(15)
+                .ToList();
+            return Ok(topCategories);
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] string categoryName)

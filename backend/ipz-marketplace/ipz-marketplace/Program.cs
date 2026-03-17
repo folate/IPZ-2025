@@ -1,9 +1,11 @@
+using ipz_marketplace.Controllers;
 using ipz_marketplace.Data;
 using ipz_marketplace.Entities;
 using ipz_marketplace.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 namespace ipz_marketplace;
 
@@ -12,6 +14,10 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                             .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
+                             .AddEnvironmentVariables();
 
         var keysDirectory = new DirectoryInfo("/root/.aspnet/DataProtection-Keys");
         // var keysDirectory = new DirectoryInfo("../../keys/DataProtection-Keys");
@@ -26,6 +32,12 @@ public class Program
             .SetApplicationName("ipz-marketplace");
 
         builder.Services.AddScoped<AuthService>();
+
+        builder.Services.AddSingleton<EmailService>();
+
+        builder.Services.AddSingleton<OrderService>();
+
+        builder.Services.AddScoped<OrderTransactionService>();
 
         builder.Services.AddControllers();
         
@@ -111,6 +123,23 @@ public class Program
                 options.RoutePrefix = "api/swagger";
             });
         }
+
+        app.UseStaticFiles();
+
+        var photosPath = Path.Combine(Directory.GetCurrentDirectory(), "photos");
+        Console.WriteLine($"Photos path: {photosPath}");
+        if (!Directory.Exists(photosPath))
+        {
+            Directory.CreateDirectory(photosPath);
+        }
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(photosPath),
+            RequestPath = "/photos"
+        });
+
+        app.UseRouting();
 
         app.UseCors();
 

@@ -1,7 +1,6 @@
 ﻿using ipz_marketplace.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 
 namespace ipz_marketplace;
 
@@ -17,6 +16,7 @@ public class MarketplaceDbContext : IdentityDbContext<User>
     public DbSet<BuyerAd> BuyerAds { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Revision> Revisions { get; set; }
+    public DbSet<AdPhoto> Photos { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
 
@@ -47,6 +47,14 @@ public class MarketplaceDbContext : IdentityDbContext<User>
 
             entity.Property(g => g.Price)
                   .HasColumnType("numeric(18,2)");
+        });
+
+        builder.Entity<AdPhoto>(entity =>
+        {
+            entity.HasOne(p => p.SellerAd)
+                  .WithMany(a => a.Photos)
+                  .HasForeignKey(p => p.SellerAdId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Buyer>()

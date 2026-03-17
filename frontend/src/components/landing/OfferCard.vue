@@ -55,7 +55,7 @@ function pickUserName(o) {
 }
 
 const user = computed(() => pickUserName(props.offer) || "USER");
-const title = computed(() => props.offer?.title || "TYTUŁ");
+const title = computed(() => props.offer?.title || "TITLE");
 
 const price = computed(() => {
   const gigs = props.offer?.gigs;

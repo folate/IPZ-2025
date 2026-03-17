@@ -12,16 +12,16 @@ namespace ipz_marketplace.Entities
         public int Quantity { get; set; }
         public string? AdditionalInstructions { get; set; }
 
+        [ForeignKey(nameof(SellerId))]
         public Seller Seller { get; set; }
-        [ForeignKey(nameof(Seller))]
         public int SellerId { get; set; }
 
+        [ForeignKey(nameof(BuyerId))]
         public Buyer Buyer { get; set; }
-        [ForeignKey(nameof(Buyer))]
         public int BuyerId { get; set; }
 
+        [ForeignKey(nameof(GigsId))]
         public Gigs Gigs { get; set; }
-        [ForeignKey(nameof(Gigs))]
         public int GigsId { get; set; }
     }
 }

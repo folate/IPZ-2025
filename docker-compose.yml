@@ -29,6 +29,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend/keys:/root/.aspnet/DataProtection-Keys
+      - ./backend/photos:/app/photos
 
   frontend:
     build:

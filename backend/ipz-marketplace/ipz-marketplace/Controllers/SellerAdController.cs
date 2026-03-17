@@ -14,15 +14,17 @@ namespace ipz_marketplace.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly MarketplaceDbContext _context;
-        public SellerAdController(UserManager<User> userManager, MarketplaceDbContext context)
+        private readonly EmailService _emailService;
+        public SellerAdController(UserManager<User> userManager, MarketplaceDbContext context, EmailService emailService)
         {
             _userManager = userManager;
             _context = context;
+            _emailService = emailService;
         }
 
         [Authorize(Roles = "Seller")]
         [HttpPost("create")]
-        public async Task<IActionResult> CreateAd([FromBody] SellerAdDTO adDto)
+        public async Task<IActionResult> CreateAd([FromForm] SellerAdDTO adDto)
         {
             var userId = _userManager.GetUserId(User);
             if (userId == null)
@@ -30,20 +32,57 @@ namespace ipz_marketplace.Controllers
                 return Unauthorized("userId went wrong!");
             }
 
+            var logged = await _userManager.FindByIdAsync(userId);
+
+            if (logged == null)
+            {
+                return NotFound("user was not found!");
+            }
+
+            var photosFile = new List<AdPhoto>();
+
+            if (adDto.Photos != null && adDto.Photos.Any())
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "photos");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                foreach (var file in adDto.Photos)
+                {
+                    if (file.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                        var filePath = Path.Combine(uploadsFolder, fileName);
+                        var stream = new FileStream(filePath, FileMode.Create);
+
+                        await file.CopyToAsync(stream);
+                        var adPhoto = new AdPhoto
+                        {
+                            Url = $"/photos/{fileName}",
+                            IsMain = (adDto.Photos.Count == 0)
+                        };
+                        photosFile.AddRange(adPhoto);
+                    }
+                }
+            }           
+
             var ad = new SellerAd
             {
                 Title = adDto.Title,
                 Description = adDto.Description,
                 CreateDate = DateTime.UtcNow,
                 FreelancerId = userId,
+                Category = adDto.Category,
                 Gigs = adDto.Gigs.Select(g => new Gigs
                 {
                     Id = g.Id,
                     TierName = g.TierName,
                     TierDescription = g.TierDescription,
                     Price = g.Price
-                }).ToList()
+                }).ToList(),
+                Photos = photosFile
             };
+
+            await _emailService.EmailConnection(logged.Email, "Sucessfuly created Ad!", $"Thank you {logged.UserName} for creating Ad for our service.");
 
             _context.SellerAds.Add(ad);
             await _context.SaveChangesAsync();
@@ -61,12 +100,18 @@ namespace ipz_marketplace.Controllers
                     Title = a.Title,
                     Description = a.Description,
                     Freelancer = a.Freelancer.UserName,
+                    Category = a.Category,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
                         Id = g.Id,
                         TierName = g.TierName,
                         TierDescription = g.TierDescription,
                         Price = g.Price
+                    }).ToList(),
+                    Photos = a.Photos.Select(p => new AdPhoto
+                    { 
+                        Url = p.Url,
+                        IsMain = p.IsMain
                     }).ToList()
                 })
                 .FirstOrDefault(a => a.Id == id);
@@ -83,15 +128,22 @@ namespace ipz_marketplace.Controllers
                     Description = a.Description,
                     Freelancer = a.Freelancer.UserName,
                     FreelancerId = a.FreelancerId,
+                    Category = a.Category,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
                         Id = g.Id,
                         TierName = g.TierName,
                         TierDescription = g.TierDescription,
                         Price = g.Price
+                    }).ToList(),
+                    Photos = a.Photos.Select(p => new AdPhoto
+                    {
+                        Url = p.Url,
+                        IsMain= p.IsMain
                     }).ToList()
                 })
                 .Take(number)
+                .OrderBy(a => a.Id)
                 .ToList();
 
             return Ok(sellerAds);
@@ -114,11 +166,17 @@ namespace ipz_marketplace.Controllers
                     Title = a.Title,
                     Description = a.Description,
                     Freelancer = a.Freelancer.UserName,
+                    Category = a.Category,
                     Gigs = a.Gigs.Select(g => new GigsDTO
                     {
                         TierName = g.TierName,
                         TierDescription = g.TierDescription,
                         Price = g.Price
+                    }).ToList(),
+                    Photos = a.Photos.Select(p => new AdPhoto
+                    {
+                        Url = p.Url,
+                        IsMain = p.IsMain
                     }).ToList()
                 })
                 .ToList();
