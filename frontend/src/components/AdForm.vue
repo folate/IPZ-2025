@@ -41,7 +41,7 @@ const schema = yup.object({
     .min(1, "At least one tier is required"),
 });
 
-const onSubmit = async (values) => {
+const onSubmit = async (values, { setFieldError }) => {
   try {
     const ImageFiles = fileUpload.value?.files;
     const formData = new FormData();
@@ -63,12 +63,15 @@ const onSubmit = async (values) => {
     await axios.post("/api/sellerad/create", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    console.log("YESSS");
+    //console.log("YESSS");
     emit("close");
   } catch (err) {
     if (err.response?.status === 400) {
       const validationErrors = err.response.data.errors;
       setFieldErrors(validationErrors);
+    }
+    if (err.response?.status === 413) {
+      setFieldError("images", "File size too large.");
     }
   }
 };
