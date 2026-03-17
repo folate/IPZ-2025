@@ -117,7 +117,12 @@ const onSubmit = async (values, { setFieldError }) => {
               <ErrorMessage name="categories" class="error-text" />
             </div>
             <div class="field-group">
-              <input type="file" accept="image/*" multiple ref="fileUpload" />
+              <input
+                type="file"
+                accept="image/jpeg, image/png, image/webp, image/jpg"
+                multiple
+                ref="fileUpload"
+              />
               <ErrorMessage name="images" class="error-text" />
             </div>
             <hr />
