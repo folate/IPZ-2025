@@ -49,7 +49,7 @@ async function buyTier(tier) {
     if (!res.ok) {
       throw new Error(`Błąd zakupu(${res.status})`);
     }
-    console.log("bought succesfully");
+    console.log("bought succesfully" + res);
   } catch (err) {
     error.value = err.message;
   }
