@@ -1,7 +1,6 @@
 ﻿using ipz_marketplace.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 
 namespace ipz_marketplace;
 

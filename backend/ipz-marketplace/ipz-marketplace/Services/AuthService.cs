@@ -74,6 +74,8 @@ namespace ipz_marketplace.Services
                         JoinedDate = DateTime.UtcNow,
                         Bio = "This is my bio"
                     };
+                    _context.Sellers.Add(seller);
+                    await _context.SaveChangesAsync();
                 }
                 else
                     await _userManager.AddToRoleAsync(newUser, "Buyer");

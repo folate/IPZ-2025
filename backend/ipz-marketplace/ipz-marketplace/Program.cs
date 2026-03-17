@@ -33,6 +33,12 @@ public class Program
 
         builder.Services.AddScoped<AuthService>();
 
+        builder.Services.AddSingleton<EmailService>();
+
+        builder.Services.AddSingleton<OrderService>();
+
+        builder.Services.AddScoped<OrderTransactionService>();
+
         builder.Services.AddControllers();
         
         builder.Services.AddEndpointsApiExplorer();
@@ -50,10 +56,6 @@ public class Program
                       .AllowCredentials();
             });
         });
-
-        builder.Services.AddSingleton<EmailService>();
-
-        builder.Services.AddSingleton<OrderService>();
 
         builder.Services.AddDbContext<MarketplaceDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
         builder.Services.AddDataProtection();

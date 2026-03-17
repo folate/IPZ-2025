@@ -76,6 +76,7 @@ public class DatabaseSeeder
                         Bio = "Experienced web developer with a passion for creating dynamic and responsive websites. AI powered",
                         IsAvailable = true
                     };
+                    context.Sellers.Add(seller);
 
                     var sellerAd = new SellerAd
                     {
@@ -110,7 +111,7 @@ public class DatabaseSeeder
 
                     var photo = new AdPhoto
                     {
-                        Url = "firstphoto.png",
+                        Url = "/photos/firstphoto.png",
                         IsMain = true,
                         SellerAdId = sellerAd.Id,
                         SellerAd = sellerAd
