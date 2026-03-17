@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ipz_marketplace.Entities;
 
@@ -11,6 +12,7 @@ public class Seller
     [Required]
     [ForeignKey(nameof(User))]
     public string UserId { get; set; }
+    [JsonIgnore]
     public User User { get; set; }
 
     [MaxLength(1000)]
