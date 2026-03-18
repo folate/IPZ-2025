@@ -1,12 +1,5 @@
 <template>
-  <div class="c"><slot /></div>
+  <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <slot />
+  </div>
 </template>
-
-<style scoped>
-.c
-{
-  width: min(1600px, 100%);
-  margin: 0 auto;
-  padding: 0 32px;
-}
-</style>
