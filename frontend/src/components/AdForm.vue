@@ -59,21 +59,25 @@ const schema = yup.object({
 
 const onSubmit = async (values, { setSubmitting }) => {
   try {
-    const gigsPayload = values.tiers.map((tier) => ({
-      TierName: tier.name,
-      TierDescription: tier.description,
-      Price: tier.price,
-    }));
+    const ImageFiles = fileUpload.value?.files;
+    const formData = new FormData();
+    formData.append("Title", values.title);
+    formData.append("Description", values.description);
+    formData.append("Category", values.categories);
 
-    const response = await fetch("/api/sellerad/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Title: values.title,
-        Description: values.description,
-        Category: values.categories,
-        Gigs: gigsPayload,
-      }),
+    if (ImageFiles && ImageFiles.length > 0) {
+      Array.from(ImageFiles).forEach((file) => {
+        formData.append("Photos", file);
+      });
+    }
+
+   values.tiers.forEach((tier, index) => {
+      formData.append(`Gigs[${index}].TierName`, tier.name);
+      formData.append(`Gigs[${index}].TierDescription`, tier.description);
+      formData.append(`Gigs[${index}].Price`, tier.price);
+    });
+    await axios.post("/api/sellerad/create", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
     if (!response.ok) {
