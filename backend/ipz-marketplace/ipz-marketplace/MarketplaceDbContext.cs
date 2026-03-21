@@ -1,6 +1,7 @@
 ﻿using ipz_marketplace.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace ipz_marketplace;
 
@@ -61,17 +62,34 @@ public class MarketplaceDbContext : IdentityDbContext<User>
             .HasOne(b => b.User)
             .WithOne(u => u.Buyer)
             .HasForeignKey<Buyer>(b => b.UserId);
+        builder.Entity<Buyer>()
+            .HasIndex(b => b.UserId)
+            .IsUnique();
 
         builder.Entity<Seller>()
             .HasOne(s => s.User)
             .WithOne(u => u.Seller)
             .HasForeignKey<Seller>(s => s.UserId);
+        builder.Entity<Seller>()
+            .HasIndex(b => b.UserId)
+            .IsUnique();
 
         builder.Entity<Order>()
             .HasOne(o => o.Gigs)
             .WithMany()
             .HasForeignKey(o => o.GigsId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(o => o.Seller)
+            .WithMany()
             .HasForeignKey(o => o.SellerId)
-            .HasForeignKey(o => o.BuyerId);
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(o => o.Buyer)
+            .WithMany()
+            .HasForeignKey(o => o.BuyerId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

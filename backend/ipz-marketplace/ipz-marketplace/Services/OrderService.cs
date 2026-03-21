@@ -34,7 +34,13 @@ namespace ipz_marketplace.Services
             var response = await client.PostAsync("https://secure.snd.payu.com/pl/standard/user/oauth/authorize",
                 new FormUrlEncodedContent(requestData));
 
-            var json = await response.Content.ReadFromJsonAsync<PayUResponseDTO>();
+            var json = await response.Content.ReadFromJsonAsync<PayUTokenResponseDTO>();
+
+            if (json == null || string.IsNullOrEmpty(json.AccessToken))
+            {
+                throw new Exception("PayU zwróciło pusty token." + json);
+            }
+
             return json.AccessToken;
         }
     }

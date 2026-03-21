@@ -37,6 +37,18 @@ services:
       dockerfile: Dockerfile
     container_name: ipz_frontend
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    command:
+      - "http"
+      - "ipz_backend:8080"
+    ports:
+      - "4040:4040"
+    env_file:
+      - env_file.env
+    container_name: ngrok
+
+
   nginx-proxy:
     image: nginx:alpine
     container_name: ipz_gateway

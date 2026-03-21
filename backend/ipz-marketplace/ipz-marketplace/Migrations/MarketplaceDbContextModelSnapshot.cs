@@ -323,10 +323,17 @@ namespace ipz_marketplace.Migrations
                     b.Property<int>("BuyerId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ExtOrderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("GigsId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("OrderUpdateDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Price")
@@ -345,6 +352,8 @@ namespace ipz_marketplace.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BuyerId");
+
+                    b.HasIndex("GigsId");
 
                     b.HasIndex("SellerId");
 
@@ -650,19 +659,19 @@ namespace ipz_marketplace.Migrations
                     b.HasOne("ipz_marketplace.Entities.Buyer", "Buyer")
                         .WithMany()
                         .HasForeignKey("BuyerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ipz_marketplace.Entities.Gigs", "Gigs")
                         .WithMany()
-                        .HasForeignKey("BuyerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("GigsId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ipz_marketplace.Entities.Seller", "Seller")
                         .WithMany()
                         .HasForeignKey("SellerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Buyer");

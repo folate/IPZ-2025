@@ -8,24 +8,48 @@ namespace ipz_marketplace.Services
 {
     public class OrderTransactionService
     {
+        public enum OrderStatus
+        {
+            New,
+            Pending,
+            Paid,
+            Cancelled,
+            Failed,
+            Refunded
+        }
+
         private readonly MarketplaceDbContext _context;
         public OrderTransactionService(MarketplaceDbContext context) 
         {
             _context = context;
         }
-        public async Task<IActionResult> createOrder(OrderCreateDTO order, User user)
+        public async Task<Order?> createOrder(OrderCreateDTO order, string userId, string extOrderId)
         {
-            var buyer = _context.Buyers.FirstOrDefault(u => u.UserId == user.Id);
-
-            if (buyer == null)
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                return new BadRequestObjectResult("Buyer not found");
+                return null;
             }
+
+            var buyers = await _context.Buyers.Where(u => u.UserId == userId).ToListAsync();
+            Console.WriteLine($"\n\n\nDEBUG: User Identity ID: {userId} | Matched Buyers: {buyers.Count} | First Buyer ID: {buyers.FirstOrDefault()?.Id}\n\n\n");
+
+            if (buyers.Count == 0)
+            {
+                return null;
+            }
+
+            if (buyers.Count > 1)
+            {
+                Console.WriteLine($"ERROR: Multiple buyer records found for UserId={userId}");
+                return null;
+            }
+
+            var buyer = buyers[0];
 
             var gig = _context.Gigs.FirstOrDefault(g => g.Id == order.GigId);
             if (gig == null)
             {
-                return new BadRequestObjectResult("Gig not found");
+                return null;
             }
 
             var gigs = await _context.Gigs
@@ -48,12 +72,13 @@ namespace ipz_marketplace.Services
 
             var newOrder = new Order
             {
+                ExtOrderId = extOrderId,
                 Quantity = order.Quantity,
                 Price = (int)order.Quantity * (int)gig.Price,
                 AdditionalInstructions = order.AdditionalInstructions,
                 AproxDeliveryDate = order.AproxDeliveryTime,
                 OrderDate = DateTime.UtcNow,
-                Status = "Pending",
+                Status = OrderStatus.Pending.ToString(),
                 GigsId = order.GigId,
                 Gigs = gig,
                 BuyerId = buyer.Id,
@@ -66,7 +91,23 @@ namespace ipz_marketplace.Services
             buyer.TotalOrders += 1;
             _context.Buyers.Update(buyer);
             await _context.SaveChangesAsync();
-            return new OkObjectResult(newOrder);
+            return newOrder;
+        }
+
+        public async Task<IActionResult> markOrderAs(string extOrderId, string mark)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.ExtOrderId == extOrderId);
+            if (order == null)
+            {
+                return new BadRequestObjectResult("Zamówienie nie znalezione");
+            }
+
+            order.Status = mark;
+            order.OrderUpdateDate = DateTime.UtcNow;
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
+            return new OkObjectResult($"Zamówienie oznaczone jako {mark}");
         }
     }
+
 }

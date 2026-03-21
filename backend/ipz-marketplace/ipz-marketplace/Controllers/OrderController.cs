@@ -4,7 +4,11 @@ using ipz_marketplace.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using static ipz_marketplace.Controllers.OrderController;
 
 namespace ipz_marketplace.Controllers
 {
@@ -13,6 +17,36 @@ namespace ipz_marketplace.Controllers
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
+        public enum OrderStatus
+        {
+            New,
+            Pending,
+            Paid,
+            Cancelled,
+            Failed,
+            Refunded
+        }
+        public class PayUOrderResponse
+        {
+            [JsonPropertyName("status")]
+            public PayUStatus Status { get; set; }
+
+            [JsonPropertyName("redirectUri")]
+            public string RedirectUri { get; set; }
+
+            [JsonPropertyName("orderId")]
+            public string OrderId { get; set; }
+
+            [JsonPropertyName("extOrderId")]
+            public string ExtOrderId { get; set; }
+        }
+
+        public class PayUStatus
+        {
+            [JsonPropertyName("statusCode")]
+            public string StatusCode { get; set; }
+        }
+
         private readonly MarketplaceDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly OrderService _orderService;
@@ -36,7 +70,7 @@ namespace ipz_marketplace.Controllers
         public async Task<IActionResult> GetAccessToken(OrderCreateDTO order)
         {
             var user = await _userManager.GetUserAsync(User);
-            if(user == null)
+            if (user == null)
             {
                 return BadRequest("User not found!");
             }
@@ -48,39 +82,115 @@ namespace ipz_marketplace.Controllers
             }
 
             var token = await _orderService.GetAccessToken();
-            var client = new HttpClient();
-            var actionResult = await _orderTransactionService.createOrder(order, user);
-            var newOrder = new Order();
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = false
+            };
+            var client = new HttpClient(handler);
 
-            if (actionResult is OkObjectResult okResult)
+            var extOrder = Guid.NewGuid().ToString();
+            var newOrder = await _orderTransactionService.createOrder(order, user.Id, extOrder);
+            if(newOrder == null)
             {
-                newOrder = okResult.Value as Order;
-                if (newOrder == null)
-                {
-                    return BadRequest("Cannot create order");
-                }
+                return BadRequest("Problem with creating order");
             }
-            else
-            {
-                return BadRequest("Cannot create order");
-            }
+
+            string amountInGrosze = ((int)(newOrder.Price * 100)).ToString();
 
             var payuOrder = new
             {
+                notifyUrl = "https://shyla-pedagoguish-beamishly.ngrok-free.dev/api/Order/notify",
+                continueUrl = "https://localhost/thanks",
                 customerIp = "127.0.0.1",
                 merchantPosId = merchantId,
                 description = $"Payment for order by Id: {newOrder.Id}",
                 currencyCode = "PLN",
-                totalAmount = newOrder.Price + "00",
+                totalAmount = amountInGrosze,
+                extOrderId = extOrder,
                 products = new[]
                 {
-                    new { name = $"Gig id: {newOrder.GigsId}", unitPrice = newOrder.Price + "00", quantity = "1" }
+                    new { 
+                        name = $"Gig id: {order.GigId}",
+                        unitPrice = amountInGrosze, 
+                        quantity = "1" 
+                    }
                 }
             };
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            var response = await client.PostAsJsonAsync("https://secure.payu.com/api/v2_1/orders", order);
 
-            return Ok(response);
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await client.PostAsJsonAsync("https://secure.snd.payu.com/api/v2_1/orders",payuOrder);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            try
+            {
+                var result = JsonSerializer.Deserialize<PayUOrderResponse>(content, options);
+
+                if (result?.Status?.StatusCode == "SUCCESS" || result?.Status?.StatusCode == "WARNING_CONTINUE_3DS")
+                {
+                    return Ok(new 
+                    { 
+                        url = result.RedirectUri 
+                    });
+                }
+
+                return BadRequest($"PayU zwróciło status: {result?.Status?.StatusCode}");
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Błąd parsowania: {ex.Message}");
+                Console.WriteLine($"Otrzymane body: {content}");
+                return StatusCode(500, "Błąd komunikacji z PayU");
+            }
+        }
+
+        [HttpPost("notify")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Notify([FromBody] PayUNotificationDTO notification)
+        {
+            Console.WriteLine($"Otrzymano powiadomienie od PayU: {notification.Order.ExtOrderId}, ze statusem {notification.Order.Status}");
+
+            if (notification?.Order == null)
+            {
+                return BadRequest("Invalid payload");
+            }
+            var extOrderId = notification.Order.ExtOrderId;
+
+            switch (notification.Order.Status)
+            {
+                case "COMPLETED":
+                    await _orderTransactionService.markOrderAs(extOrderId, OrderStatus.Paid.ToString());
+                    break;
+
+                case "PENDING":
+                    await _orderTransactionService.markOrderAs(extOrderId, OrderStatus.Pending.ToString());
+                    break;
+
+                case "CANCELED":
+                    await _orderTransactionService.markOrderAs(extOrderId, OrderStatus.Cancelled.ToString());
+                    break;
+
+                case "REJECTED":
+                case "FAILED":
+                    await _orderTransactionService.markOrderAs(extOrderId, OrderStatus.Failed.ToString());
+                    break;
+
+                default:
+                    Console.WriteLine($"Inny status: {notification.Order.Status}");
+                    break;
+            }
+
+            return Ok($"Order completed with {notification.Order.Status}");
+            
         }
 
         [Authorize(Roles = "Buyer")]
@@ -95,7 +205,8 @@ namespace ipz_marketplace.Controllers
                 return BadRequest("Buyer not found");
             }
 
-            var orders = _context.Orders.Where(o => o.BuyerId == buyer.Id).ToList();
+            var orders = _context.Orders.Where(o => o.Buyer.UserId == userId).ToList();
+
             return Ok(orders);
 
         }

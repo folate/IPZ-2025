@@ -50,6 +50,19 @@ public class DatabaseSeeder
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
+        //var adminBuyer = new Buyer
+        //{
+        //    UserId = adminUser.Id,
+        //    ShippingAddress = "123 Admin Street",
+        //    BillingAddress = "123 Admin Street",
+        //    TotalOrders = 0,
+        //    JoinedDate = DateTime.UtcNow,
+        //    LastOrderDate = null,
+        //    PreferredPaymentMethod = "Credit Card"
+        //};
+
+        //context.Buyers.Add(adminBuyer);
+
         var tab = new[] { "buyer", "freelancer" };
 
         foreach (var name in tab) {
@@ -136,19 +149,6 @@ public class DatabaseSeeder
             }
 
         }
-
-        var adminBuyer = new Buyer
-        {
-            UserId = adminUser.Id,
-            ShippingAddress = "123 Admin Street",
-            BillingAddress = "123 Admin Street",
-            TotalOrders = 0,
-            JoinedDate = DateTime.UtcNow,
-            LastOrderDate = null,
-            PreferredPaymentMethod = "Credit Card"
-        };
-
-        context.Buyers.Add(adminBuyer);
 
         var categories = new string[]
         {
