@@ -50,18 +50,18 @@ public class DatabaseSeeder
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
-        //var adminBuyer = new Buyer
-        //{
-        //    UserId = adminUser.Id,
-        //    ShippingAddress = "123 Admin Street",
-        //    BillingAddress = "123 Admin Street",
-        //    TotalOrders = 0,
-        //    JoinedDate = DateTime.UtcNow,
-        //    LastOrderDate = null,
-        //    PreferredPaymentMethod = "Credit Card"
-        //};
+        var adminBuyer = new Buyer
+        {
+            UserId = adminUser.Id,
+            ShippingAddress = "123 Admin Street",
+            BillingAddress = "123 Admin Street",
+            TotalOrders = 0,
+            JoinedDate = DateTime.UtcNow,
+            LastOrderDate = null,
+            PreferredPaymentMethod = "Credit Card"
+        };
 
-        //context.Buyers.Add(adminBuyer);
+        context.Buyers.Add(adminBuyer);
 
         var tab = new[] { "buyer", "freelancer" };
 
@@ -69,7 +69,7 @@ public class DatabaseSeeder
             var user = new User
             {
                 UserName = name,
-                Email = "user@marketplace.com",
+                Email = "pe55848@zut.edu.pl",
                 EmailConfirmed = true,
                 FirstName = "uesr",
                 LastName = "using",
