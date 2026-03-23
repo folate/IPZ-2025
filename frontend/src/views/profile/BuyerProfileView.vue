@@ -1,16 +1,23 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useAuth } from "@/stores/auth";
 import LandingHeader from "@/components/landing/LandingHeader.vue";
 import Container from "@/components/ui/Container.vue";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, UserCircle, Calendar, ShoppingBag, Clock } from "lucide-vue-next";
+import { Settings, UserCircle, Calendar, ShoppingBag, Clock, Package, ExternalLink, RefreshCw } from "lucide-vue-next";
 
 const router = useRouter();
+const { isLoggedIn, initAuth } = useAuth();
 const loading = ref(true);
 
-onMounted(() => {
+onMounted(async () => {
+  await initAuth();
+  if (!isLoggedIn.value) {
+    router.push("/login");
+    return;
+  }
   fetchProfileInfo();
 });
 
@@ -42,6 +49,9 @@ const fetchProfileInfo = async () => {
   } finally {
     loading.value = false;
   }
+};
+const openOrderRevision = (id) => {
+  router.push(`/order/${id}/revision`);
 };
 </script>
 
@@ -130,9 +140,36 @@ const fetchProfileInfo = async () => {
                     <span class="w-2 h-2 rounded-full bg-teal-500"></span>
                     W trakcie (In Progress)
                   </h3>
-                  <div class="bg-zinc-50 dark:bg-zinc-900/50 rounded-xl p-6 text-center border border-zinc-100 dark:border-zinc-800 border-dashed">
-                    <span class="text-zinc-500 font-medium select-none">Brak zamówień w trakcie.</span>
+                  
+                  <!-- Placeholder Order -->
+                  <div 
+                    class="group relative bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md hover:border-teal-200 dark:hover:border-teal-900/50 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    @click="openOrderRevision('ORD-001')"
+                  >
+                    <div class="flex items-center gap-4">
+                      <div class="h-12 w-12 shrink-0 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                        <RefreshCw class="h-6 w-6 font-bold" />
+                      </div>
+                      <div class="flex flex-col">
+                        <span class="text-sm font-bold text-zinc-400">Zamówienie #ORD-001</span>
+                        <h4 class="font-bold text-zinc-900 dark:text-zinc-100 text-lg">Nowoczesna strona internetowa WordPress</h4>
+                        <span class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Od: WebDevPro</span>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 md:border-l border-zinc-100 dark:border-zinc-800 md:pl-6 min-w-40">
+                      <div class="flex flex-col">
+                        <span class="text-sm text-zinc-500">Status</span>
+                        <span class="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                          Oczekuje na recenzję
+                        </span>
+                      </div>
+                      <Button variant="ghost" size="icon" class="ml-auto text-zinc-400 group-hover:text-teal-600 transition-colors">
+                        <ExternalLink class="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
+
                 </div>
                 
                 <div>

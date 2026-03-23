@@ -4,6 +4,8 @@ import OfferDetailsCard from "../views/OfferDetails/OfferDetailsCard.vue";
 import Settings from "@/components/Settings.vue";
 import SettingsDeafultOrderMethods from "@/components/SettingsComponents/SettingsDeafultOrderMethods.vue";
 import SettingsMailNotifs from "@/components/SettingsComponents/SettingsMailNotifs.vue";
+import PaymentView from "../views/payment/PaymentView.vue";
+import OrderRevisionView from "../views/OrderRevisionView.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -51,6 +53,16 @@ const router = createRouter({
       path: "/request/:id",
       name: "BuyerAdDetails",
       component: () => import("../views/OfferDetails/BuyerAdDetailsView.vue"),
+    },
+    {
+      path: "/payment",
+      name: "payment",
+      component: PaymentView,
+    },
+    {
+      path: "/order/:id/revision",
+      name: "OrderRevision",
+      component: OrderRevisionView,
     },
     //liked
     {

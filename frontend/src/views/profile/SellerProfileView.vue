@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ExternalLink, RefreshCw } from "lucide-vue-next";
 
 const router = useRouter();
 const activeTab = ref("offers");
@@ -70,6 +71,10 @@ const reviews = [
   { id: 1, user: "Jan", stars: 5, text: "Świetna współpraca, polecam z całego serca!" },
   { id: 2, user: "Anna", stars: 4, text: "Dobry kontakt i wysoka jakość." },
 ];
+
+const openOrderRevision = (id) => {
+  router.push(`/order/${id}/revision`);
+};
 </script>
 
 <template>
@@ -157,6 +162,9 @@ const reviews = [
                 <TabsTrigger value="offers" class="rounded-none border-b-2 border-transparent px-2 py-4 text-base font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:border-teal-600 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-none data-[state=active]:bg-transparent transition-colors">
                   Oferty Wykonawcy
                 </TabsTrigger>
+                <TabsTrigger value="orders" class="rounded-none border-b-2 border-transparent px-2 py-4 text-base font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:border-teal-600 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-none data-[state=active]:bg-transparent transition-colors">
+                  Zamówienia w Trakcie (1)
+                </TabsTrigger>
                 <TabsTrigger value="reviews" class="rounded-none border-b-2 border-transparent px-2 py-4 text-base font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:border-teal-600 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-none data-[state=active]:bg-transparent transition-colors">
                   Opinie ({{ reviewStats.total }})
                 </TabsTrigger>
@@ -185,6 +193,38 @@ const reviews = [
                   <RouterLink v-for="o in filteredOffers" :key="o.id" :to="`/offer/${o.id}`" class="block">
                     <OfferCard :offer="o" />
                   </RouterLink>
+                </div>
+              </TabsContent>
+
+              <!-- Orders Tab (MOCK) -->
+              <TabsContent value="orders" class="m-0 focus-visible:outline-none flex flex-col gap-6">
+                <!-- Placeholder Order -->
+                <div 
+                  class="group relative bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md hover:border-teal-200 dark:hover:border-teal-900/50 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  @click="openOrderRevision('ORD-001')"
+                >
+                  <div class="flex items-center gap-4">
+                    <div class="h-12 w-12 shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                      <RefreshCw class="h-6 w-6 font-bold" />
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-sm font-bold text-zinc-400">Kupujący: Dawid Głowacki</span>
+                      <h4 class="font-bold text-zinc-900 dark:text-zinc-100 text-lg">Nowoczesna strona internetowa WordPress</h4>
+                      <span class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Koszt: 1500 zł | Czas: 7 dni</span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center gap-4 md:border-l border-zinc-100 dark:border-zinc-800 md:pl-6 min-w-40">
+                    <div class="flex flex-col">
+                      <span class="text-sm text-zinc-500">Twój Status</span>
+                      <span class="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                        Wymaga Dostarczenia
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="icon" class="ml-auto text-zinc-400 group-hover:text-indigo-600 transition-colors">
+                      <ExternalLink class="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
               </TabsContent>
 
