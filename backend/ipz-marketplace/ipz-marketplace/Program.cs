@@ -1,3 +1,4 @@
+using ipz_marketplace.BackgroundServices;
 using ipz_marketplace.Controllers;
 using ipz_marketplace.Data;
 using ipz_marketplace.Entities;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Quartz;
 
 namespace ipz_marketplace;
 
@@ -21,6 +23,20 @@ public class Program
 
         var keysDirectory = new DirectoryInfo("/root/.aspnet/DataProtection-Keys");
         // var keysDirectory = new DirectoryInfo("../../keys/DataProtection-Keys");
+
+        builder.Services.AddQuartz(q =>
+        {
+            var jobKey = new JobKey("EmailBackgroundService");
+            q.AddJob<EmailBackgroundService>(opts => opts.WithIdentity(jobKey));
+
+            q.AddTrigger(opts => opts
+                .ForJob(jobKey)
+                .WithIdentity("EmailBackgroundService-trigger")
+                .WithCronSchedule("0 0 8 * * ?"));
+                //.WithCronSchedule("0 0/2 * * * ?")); co 2 minuty
+        });
+
+        builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
         if (!keysDirectory.Exists)
         {
@@ -38,6 +54,8 @@ public class Program
         builder.Services.AddSingleton<OrderService>();
 
         builder.Services.AddScoped<OrderTransactionService>();
+
+        builder.Services.AddScoped<EmailScheduledService>();
 
         builder.Services.AddControllers();
         

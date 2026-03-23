@@ -17,7 +17,6 @@ namespace ipz_marketplace.Services
 
         public async Task EmailConnection(string to, string subject, string body) 
         {
-            return;
             var message = new MimeMessage();
 
             var fromAddress = _config["EmailSettings:Email"];
@@ -41,7 +40,7 @@ namespace ipz_marketplace.Services
                 throw new InvalidOperationException("EmailSettings:Password is not configured.");
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(host, 587, SecureSocketOptions.StartTls);
+            await client.ConnectAsync(host, 465, true);
             await client.AuthenticateAsync(fromAddress, password);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);

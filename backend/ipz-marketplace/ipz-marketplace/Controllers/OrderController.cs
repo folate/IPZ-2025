@@ -4,6 +4,7 @@ using ipz_marketplace.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -52,17 +53,20 @@ namespace ipz_marketplace.Controllers
         private readonly OrderService _orderService;
         private readonly OrderTransactionService _orderTransactionService;
         private readonly IConfiguration _conf;
+        private readonly EmailService _emailService;
         public OrderController(MarketplaceDbContext context, 
             UserManager<User> userManager, 
             OrderService orderService, 
             OrderTransactionService orderTransactionService,
-            IConfiguration conf)
+            IConfiguration conf,
+            EmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _orderService = orderService;
             _orderTransactionService = orderTransactionService;
             _conf = conf;
+            _emailService = emailService;
         }
 
         [Authorize(Roles = "Buyer")]
@@ -137,6 +141,8 @@ namespace ipz_marketplace.Controllers
 
                 if (result?.Status?.StatusCode == "SUCCESS" || result?.Status?.StatusCode == "WARNING_CONTINUE_3DS")
                 {
+                    await _emailService.EmailConnection(user.Email, "Order Created", 
+                        $"Your order with id {newOrder.Id} has been created.");
                     return Ok(new 
                     { 
                         url = result.RedirectUri 
