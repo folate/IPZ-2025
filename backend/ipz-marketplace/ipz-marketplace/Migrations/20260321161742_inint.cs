@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ipz_marketplace.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class inint : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -306,8 +306,10 @@ namespace ipz_marketplace.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ExtOrderId = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    OrderUpdateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     AproxDeliveryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Price = table.Column<int>(type: "integer", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
@@ -324,19 +326,19 @@ namespace ipz_marketplace.Migrations
                         column: x => x.BuyerId,
                         principalTable: "Buyers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Orders_Gigs_BuyerId",
-                        column: x => x.BuyerId,
+                        name: "FK_Orders_Gigs_GigsId",
+                        column: x => x.GigsId,
                         principalTable: "Gigs",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Orders_Sellers_SellerId",
                         column: x => x.SellerId,
                         principalTable: "Sellers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -423,6 +425,11 @@ namespace ipz_marketplace.Migrations
                 name: "IX_Orders_BuyerId",
                 table: "Orders",
                 column: "BuyerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_GigsId",
+                table: "Orders",
+                column: "GigsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_SellerId",

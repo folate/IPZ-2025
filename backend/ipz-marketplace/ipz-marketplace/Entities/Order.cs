@@ -5,8 +5,10 @@ namespace ipz_marketplace.Entities
     public class Order
     {
         public int Id { get; set; }
-        public string Status { get; set; }
+        public string ExtOrderId { get; set; }
+        public string Status { get; set; } = "New";
         public DateTime OrderDate { get; set; }
+        public DateTime OrderUpdateDate { get; set; }
         public DateTime AproxDeliveryDate { get; set; }
         public int Price { get; set; }
         public int Quantity { get; set; }

@@ -1085,3 +1085,4 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/dotnetcore,aspnetcore,node,vue,macos,windows,linux,visualstudio,visualstudiocode,rider,webstorm+all,csharp
 backend/ipz-marketplace/ipz-marketplace/appsettings.Local.json
+env_file.env

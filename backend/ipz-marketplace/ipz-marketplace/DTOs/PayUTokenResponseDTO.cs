@@ -2,7 +2,7 @@
 
 namespace ipz_marketplace.DTOs
 {
-    public class PayUResponseDTO
+    public class PayUTokenResponseDTO
     {
             [JsonPropertyName("access_token")]
             public string AccessToken { get; set; }

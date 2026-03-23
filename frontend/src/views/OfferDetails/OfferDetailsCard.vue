@@ -48,21 +48,19 @@ async function buyTier(tier) {
   console.log(tier.id, " tier bought:", tier.tierName, " ", tier.price, "zł");
   try {
     const res = await fetch(`/api/Order/create`, {
-      method: "PUT",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         quantity: 1,
-        price: tier.price,
         additionalInstructions: "None",
-        gigId: tier.id,
-        sellerId: offerDetails.value.freelancerId,
+        gigId: tier.id
       }),
     });
     if (!res.ok) {
       throw new Error(`Błąd zakupu (${res.status})`);
     }
-    console.log("bought succesfully");
-    alert(`Zakupiono pakiet: ${tier.tierName}`);
+    const data = await res.json(); 
+    console.log("bought successfully", data);
   } catch (err) {
     error.value = err.message;
   }
