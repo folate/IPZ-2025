@@ -4,15 +4,15 @@ import { useRouter } from "vue-router";
 import { useAuth } from "../../stores/auth";
 import { ROLES } from "../../auth/roles";
 import AdForm from "../AdForm.vue";
-import { 
-  ShoppingCart, 
-  LogIn, 
-  PlusCircle, 
-  FilePlus, 
-  Heart, 
-  ListX, 
-  User, 
-  LogOut 
+import {
+  ShoppingCart,
+  LogIn,
+  PlusCircle,
+  FilePlus,
+  Heart,
+  ListX,
+  User,
+  LogOut,
 } from "lucide-vue-next";
 
 const showAdForm = VueRef(false);
@@ -41,30 +41,38 @@ const iconItems = computed(() => {
     ];
   }
 
-  return [
-    {
+  const items = [];
+
+  if (hasRole(ROLES.SELLER)) {
+    items.push({
       key: "adform",
       label: "Utwórz Ogłoszenie Usługi",
       icon: PlusCircle,
       onClick: () => (showAdForm.value = true),
-    },
-    {
+    });
+  }
+
+  if (hasRole(ROLES.BUYER)) {
+    items.push({
       key: "upload",
       label: "Dodaj Zlecenie Usługi",
       icon: FilePlus,
       onClick: () => router.push("/buyer/ad"),
-    },
-    { 
-      key: "favourites", 
+    });
+  }
+
+  items.push(
+    {
+      key: "favourites",
       label: "Ulubione",
-      icon: Heart, 
-      onClick: () => router.push("/liked") 
+      icon: Heart,
+      onClick: () => router.push("/liked"),
     },
-    { 
-      key: "notfulfilled", 
+    {
+      key: "notfulfilled",
       label: "Niespełnione",
-      icon: ListX, 
-      onClick: () => {} 
+      icon: ListX,
+      onClick: () => {},
     },
     {
       key: "user",
@@ -81,15 +89,29 @@ const iconItems = computed(() => {
         router.push("/");
       },
     },
-    { key: "cart", label: "Koszyk", icon: ShoppingCart, onClick: () => {} },
-  ];
+    {
+      key: "cart",
+      label: "Koszyk",
+      icon: ShoppingCart,
+      onClick: () => {},
+    },
+  );
+
+  return items;
 });
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-    <div class="w-full max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-      <div class="text-2xl font-black tracking-tighter text-teal-600 dark:text-teal-500 cursor-pointer" @click="router.push('/')">
+  <header
+    class="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md"
+  >
+    <div
+      class="w-full max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8"
+    >
+      <div
+        class="text-2xl font-black tracking-tighter text-teal-600 dark:text-teal-500 cursor-pointer"
+        @click="router.push('/')"
+      >
         LOGO
       </div>
 
