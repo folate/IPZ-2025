@@ -20,7 +20,7 @@ public class SellerController : ControllerBase
         _context = context;
     }
 
-    [Authorize(Roles = "Admin")]
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSellerData([FromRoute] int id)
     {
@@ -29,6 +29,8 @@ public class SellerController : ControllerBase
             .Where(s => s.Id == id)
             .Select(s => new SellerDTO
             {
+                Id = s.Id,
+                UserId = s.UserId,
                 FirstName = s.User.FirstName,
                 LastName = s.User.LastName,
                 Email = s.User.Email,
@@ -52,7 +54,7 @@ public class SellerController : ControllerBase
         return Ok(seller);
     }
 
-    [Authorize]
+    [Authorize(Roles = "Seller,Admin")]
     [HttpGet("me")]
     public async Task<IActionResult> GetMySellerProfile()
     {
@@ -67,6 +69,7 @@ public class SellerController : ControllerBase
             .Where(s => s.UserId == userId)
             .Select(s => new SellerDTO
             {
+                UserId = s.UserId,
                 FirstName = s.User.FirstName,
                 LastName = s.User.LastName,
                 Email = s.User.Email,
@@ -90,7 +93,52 @@ public class SellerController : ControllerBase
         return Ok(seller);
     }
 
-    [Authorize]
+    [Authorize(Roles = "Seller,Admin")]
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateMySellerProfile([FromBody] UpdateSellerDTO updateDto)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
+        var seller = await _context.Sellers
+            .Where(s => s.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (seller == null)
+        {
+            return NotFound("Seller profile not found");
+        }
+
+        if (updateDto.FirstName != null) user.FirstName = updateDto.FirstName;
+        if (updateDto.LastName != null) user.LastName = updateDto.LastName;
+        if (updateDto.Bio != null) seller.Bio = updateDto.Bio;
+        if (updateDto.Skills != null) seller.Skills = updateDto.Skills;
+        if (updateDto.HourlyRate.HasValue) seller.HourlyRate = updateDto.HourlyRate.Value;
+        if (updateDto.PortfolioUrl != null) seller.PortfolioUrl = updateDto.PortfolioUrl;
+        if (updateDto.IsAvailable.HasValue) seller.IsAvailable = updateDto.IsAvailable.Value;
+
+        var userUpdateResult = await _userManager.UpdateAsync(user);
+        if (!userUpdateResult.Succeeded)
+        {
+            return BadRequest(userUpdateResult.Errors);
+        }
+
+        _context.Sellers.Update(seller);
+        await _context.SaveChangesAsync();
+
+        return Ok("Profile updated successfully");
+    }
+
+    [Authorize(Roles = "Buyer")]
     [HttpPost]
     public async Task<IActionResult> CreateSellerProfile([FromBody] CreateSellerDTO createDto)
     {
@@ -129,32 +177,65 @@ public class SellerController : ControllerBase
         return CreatedAtAction(nameof(GetMySellerProfile), new { }, "Seller profile created successfully");
     }
 
+    [AllowAnonymous]
+    [HttpGet("{id}/reviews")]
+    public async Task<IActionResult> GetSellerReviews([FromRoute] int id)
+    {
+        var reviews = await _context.Reviews
+            .Where(r => r.SellerId == id)
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new ReviewDTO
+            {
+                Id = r.Id,
+                BuyerName = r.Buyer.User.FirstName + " " + r.Buyer.User.LastName,
+                Rating = r.Rating,
+                Description = r.Description,
+                CreatedAt = r.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(reviews);
+    }
+
     [Authorize]
-    [HttpPut("me")]
-    public async Task<IActionResult> UpdateMySellerProfile([FromBody] UpdateSellerDTO updateDto)
+    [HttpPost("{id}/reviews")]
+    public async Task<IActionResult> AddReview([FromRoute] int id, [FromBody] CreateReviewDTO createDto)
     {
         var userId = _userManager.GetUserId(User);
-        if (userId == null)
+        if (userId == null) return Unauthorized();
+
+        var buyer = await _context.Buyers.FirstOrDefaultAsync(b => b.UserId == userId);
+        if (buyer == null) return BadRequest("Only buyers can leave reviews");
+
+        var seller = await _context.Sellers.FindAsync(id);
+        if (seller == null) return NotFound("Seller not found");
+
+        if (seller.UserId == userId)
         {
-            return Unauthorized();
+            return BadRequest("You cannot review your own profile");
         }
 
-        var seller = await _context.Sellers
-            .FirstOrDefaultAsync(s => s.UserId == userId);
-
-        if (seller == null)
+        var review = new Review
         {
-            return NotFound("Seller profile not found");
-        }
+            SellerId = id,
+            BuyerId = buyer.Id,
+            Rating = createDto.Rating,
+            Description = createDto.Description,
+            CreatedAt = DateTime.UtcNow
+        };
 
-        seller.Bio = updateDto.Bio ?? seller.Bio;
-        seller.Skills = updateDto.Skills ?? seller.Skills;
-        seller.HourlyRate = updateDto.HourlyRate ?? seller.HourlyRate;
-        seller.PortfolioUrl = updateDto.PortfolioUrl ?? seller.PortfolioUrl;
-        seller.IsAvailable = updateDto.IsAvailable ?? seller.IsAvailable;
+        _context.Reviews.Add(review);
+        
+        // Update seller rating
+        var allReviews = await _context.Reviews.Where(r => r.SellerId == id).ToListAsync();
+        decimal totalRating = allReviews.Sum(r => (decimal)r.Rating) + createDto.Rating;
+        int reviewCount = allReviews.Count + 1;
+        
+        seller.Rating = totalRating / reviewCount;
+        seller.TotalReviews = reviewCount;
 
         await _context.SaveChangesAsync();
 
-        return Ok("Seller profile updated successfully");
+        return Ok("Review added successfully");
     }
 }

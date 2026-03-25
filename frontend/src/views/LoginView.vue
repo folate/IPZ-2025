@@ -1,12 +1,13 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const router = useRouter();
+const route = useRoute();
 
 const email = ref("");
 const password = ref("");
@@ -45,7 +46,8 @@ const handleLogin = async () => {
     }
 
     // Success
-    router.push("/");
+    const redirectPath = route.query.redirect || "/";
+    router.push(redirectPath);
   } catch (err) {
     console.error("Network Error:", err);
     serverNotification.value = "Błąd połączenia z serwerem.";
@@ -116,7 +118,7 @@ const handleLogin = async () => {
 
               <div class="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
                 Nie masz jeszcze konta?
-                <router-link to="/register" class="font-medium inline-block text-teal-600 dark:text-teal-400 hover:text-teal-700 hover:underline ml-1">
+                <router-link :to="route.query.redirect ? `/register?redirect=${route.query.redirect}` : '/register'" class="font-medium inline-block text-teal-600 dark:text-teal-400 hover:text-teal-700 hover:underline ml-1">
                   Zarejestruj się
                 </router-link>
               </div>

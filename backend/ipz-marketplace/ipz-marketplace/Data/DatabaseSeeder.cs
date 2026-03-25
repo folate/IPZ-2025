@@ -69,9 +69,9 @@ public class DatabaseSeeder
             var user = new User
             {
                 UserName = name,
-                Email = "user@marketplace.com",
+                Email = $"{name}@marketplace.com",
                 EmailConfirmed = true,
-                FirstName = "uesr",
+                FirstName = name,
                 LastName = "using",
                 CreateDate = DateTime.UtcNow
             };
@@ -156,7 +156,22 @@ public class DatabaseSeeder
             "Graphic Design",
             "Content Writing",
             "Digital Marketing",
-            "Video Editing"
+            "Video Editing",
+            "Voice Over",
+            "Logo Design",
+            "Search Engine Optimization",
+            "Social Media Management",
+            "Translation",
+            "Data Entry",
+            "Illustration",
+            "Audio Editing",
+            "Business Consulting",
+            "Virtual Assistant",
+            "Mobile App Development",
+            "Animation",
+            "E-commerce Development",
+            "Architecture & Interior Design",
+            "Game Development"
         };
 
         foreach (var categoryName in categories)

@@ -1,38 +1,35 @@
 <script setup>
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-vue-next"
-import { ref, onBeforeUnmount } from "vue";
+import { ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
-const query = ref("");
-let t = null;
+const router = useRouter();
+const route = useRoute();
+const query = ref(route.query.q || "");
 
-function emitSearch(value) {
-  window.dispatchEvent(new CustomEvent("search:changed", { detail: value }));
-}
+watch(() => route.query.q, (newQ) => {
+  query.value = newQ || "";
+});
 
 function onInput(e) {
   query.value = e.target.value;
-
-  if (t) clearTimeout(t);
-  t = setTimeout(() => {
-    emitSearch(query.value);
-  }, 300);
 }
 
 function onSubmit(e) {
   e.preventDefault();
-  emitSearch(query.value);
+  router.push({ 
+    path: '/search', 
+    query: { ...route.query, q: query.value.trim() || undefined } 
+  });
 }
 
-onBeforeUnmount(() => {
-  if (t) clearTimeout(t);
-});
 </script>
 
 <template>
-  <section class="w-full bg-gradient-to-b from-teal-50/50 to-background dark:from-teal-950/20 py-16 sm:py-24">
-    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center space-y-8">
-      <div class="space-y-4 max-w-3xl">
+  <section class="w-full bg-gradient-to-b from-teal-50/50 to-background dark:from-teal-950/20 py-16 sm:py-24 overflow-hidden">
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
+      <div class="space-y-4 max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700">
         <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
           Znajdź to, czego <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700">potrzebujesz.</span>
         </h1>
@@ -41,7 +38,7 @@ onBeforeUnmount(() => {
         </p>
       </div>
       
-      <form class="relative w-full max-w-3xl mx-auto group" @submit="onSubmit">
+      <form class="relative w-full max-w-3xl mx-auto group animate-in fade-in zoom-in-95 duration-700" @submit="onSubmit">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-teal-600 transition-colors z-10">
           <Search class="h-6 w-6" />
         </div>

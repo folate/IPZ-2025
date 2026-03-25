@@ -1,4 +1,4 @@
-﻿using ipz_marketplace.Entities;
+using ipz_marketplace.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
@@ -15,9 +15,14 @@ public class MarketplaceDbContext : IdentityDbContext<User>
     public DbSet<Seller> Sellers { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<BuyerAd> BuyerAds { get; set; }
+    public DbSet<BuyerAdOffer> BuyerAdOffers { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Revision> Revisions { get; set; }
+    public DbSet<RevisionFile> RevisionFiles { get; set; }
     public DbSet<AdPhoto> Photos { get; set; }
+    public DbSet<Review> Reviews { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<Message> Messages { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
 
@@ -91,5 +96,52 @@ public class MarketplaceDbContext : IdentityDbContext<User>
             .WithMany()
             .HasForeignKey(o => o.BuyerId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<RevisionFile>(entity =>
+        {
+            entity.HasOne(f => f.Revision)
+                  .WithMany(r => r.Files)
+                  .HasForeignKey(f => f.RevisionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Review>(entity =>
+        {
+            entity.HasOne(r => r.Seller)
+                  .WithMany()
+                  .HasForeignKey(r => r.SellerId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.Buyer)
+                  .WithMany()
+                  .HasForeignKey(r => r.BuyerId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Conversation>(entity =>
+        {
+            entity.HasOne(c => c.User1)
+                  .WithMany()
+                  .HasForeignKey(c => c.User1Id)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(c => c.User2)
+                  .WithMany()
+                  .HasForeignKey(c => c.User2Id)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Message>(entity =>
+        {
+            entity.HasOne(m => m.Conversation)
+                  .WithMany(c => c.Messages)
+                  .HasForeignKey(m => m.ConversationId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(m => m.Sender)
+                  .WithMany()
+                  .HasForeignKey(m => m.SenderId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

@@ -22,9 +22,21 @@ function mapRole(roles) {
 export function useAuth() {
   const role = computed(() => state.user?.role ?? ROLES.GUEST);
   const isLoggedIn = computed(() => role.value !== ROLES.GUEST);
+  const availableRoles = computed(() => state.user?.roles ?? []);
 
   function hasRole(...rolesToCheck) {
     return rolesToCheck.includes(role.value);
+  }
+
+  function canSwitchRole() {
+    return (state.user?.roles?.includes("Seller") || state.user?.roles?.includes("Freelancer")) && state.user?.roles?.includes("Buyer");
+  }
+
+  function switchRole(newRole) {
+    const isSellerCandidate = newRole === ROLES.SELLER && (availableRoles.value.includes("Seller") || availableRoles.value.includes("Freelancer"));
+    const isBuyerCandidate = newRole === ROLES.BUYER && availableRoles.value.includes("Buyer");
+    if (!state.user || !(isSellerCandidate || isBuyerCandidate)) return;
+    state.user.role = newRole;
   }
 
   async function initAuth() {
@@ -43,10 +55,11 @@ export function useAuth() {
 
       const data = await res.json();
 
-      const roles = Array.isArray(data?.role) ? data.role : [];
+      const roles = Array.isArray(data?.roles) ? data.roles : [];
       const finalRole = mapRole(roles);
 
       state.user = {
+        id: data?.id ?? null,
         login: data?.login ?? null,
         roles,
         role: ALL_ROLES.includes(finalRole) ? finalRole : ROLES.BUYER,
@@ -85,6 +98,8 @@ export function useAuth() {
     role,
     isLoggedIn,
     hasRole,
+    canSwitchRole,
+    switchRole,
     initAuth,
     setMockRole,
     logout,

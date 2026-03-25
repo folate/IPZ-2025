@@ -42,6 +42,12 @@ namespace ipz_marketplace.Controllers
         {
             return await _authService.Modify(userInfo);
         }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO userInfo)
+        {
+            return await _authService.ChangePassword(userInfo);
+        }
         
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()

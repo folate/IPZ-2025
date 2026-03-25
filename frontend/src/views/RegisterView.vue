@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const router = useRouter();
+const route = useRoute();
 
 const serverNotification = ref("");
 const isLoading = ref(false);
@@ -65,7 +66,8 @@ const onSubmit = async (values) => {
     }
 
     // Success
-    router.push("/login");
+    const redirectPath = route.query.redirect ? `/login?redirect=${route.query.redirect}` : "/login";
+    router.push(redirectPath);
   } catch (err) {
     console.error("Network error:", err);
     serverNotification.value = "Błąd połączenia. Sprawdź swoje połączenie z siecią.";
@@ -175,7 +177,7 @@ const onSubmit = async (values) => {
               </div>
               <div class="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
                 Masz już konto?
-                <router-link to="/login" class="font-medium inline-block text-teal-600 dark:text-teal-400 hover:text-teal-700 hover:underline ml-1">
+                <router-link :to="route.query.redirect ? `/login?redirect=${route.query.redirect}` : '/login'" class="font-medium inline-block text-teal-600 dark:text-teal-400 hover:text-teal-700 hover:underline ml-1">
                   Zaloguj się
                 </router-link>
               </div>

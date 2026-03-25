@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace ipz_marketplace.Entities;
@@ -20,4 +20,5 @@ public class SellerAd
     [JsonIgnore]
     public ICollection<Gigs> Gigs { get; set; } = new List<Gigs>();
     public ICollection<AdPhoto> Photos { get; set; } = new List<AdPhoto>();
+    public bool IsPrivate { get; set; } = false;
 }

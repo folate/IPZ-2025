@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from "vue"
 import { useRouter } from "vue-router"
+import { useAlert } from "@/stores/alert"
 import { ErrorMessage, Field, Form } from "vee-validate"
 import * as yup from "yup"
 
-import LandingHeader from "../../components/landing/LandingHeader.vue"
 import Container from "../../components/ui/Container.vue"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -23,6 +23,7 @@ import { DateFormatter, getLocalTimeZone, CalendarDate } from "@internationalize
 
 const df = new DateFormatter("pl-PL", { dateStyle: "long" })
 const router = useRouter()
+const { showAlert } = useAlert()
 
 //opcje
 const serviceTypes = [
@@ -78,18 +79,18 @@ async function onSubmit(values) {
       throw new Error(`Błąd serwera: ${res.status}`)
     }
 
-    alert("Pomyślnie dodano zlecenie!")
+    showAlert("Sukces", "Pomyślnie dodano zlecenie!")
+    window.dispatchEvent(new Event("buyerad:created"));
     router.push("/buyer/profile")
   } catch (error) {
     console.error("Błąd podczas dodawania zlecenia:", error)
-    alert("Wystąpił błąd podczas dodawania zlecenia.")
+    showAlert("Błąd", "Wystąpił błąd podczas dodawania zlecenia.", "destructive")
   }
 }
 </script>
 
 <template>
-  <div class="min-h-svh bg-zinc-50 dark:bg-zinc-950 pb-20">
-    <LandingHeader />
+  <div class="bg-zinc-50 dark:bg-zinc-950 pb-20">
 
     <Container>
       <div class="mt-8 flex flex-col gap-6 w-full">

@@ -1,9 +1,10 @@
-﻿using ipz_marketplace.DTOs;
+using ipz_marketplace.DTOs;
 using ipz_marketplace.Entities;
 using ipz_marketplace.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -24,7 +25,8 @@ namespace ipz_marketplace.Controllers
             Paid,
             Cancelled,
             Failed,
-            Refunded
+            Refunded,
+            Completed
         }
         public class PayUOrderResponse
         {
@@ -209,6 +211,89 @@ namespace ipz_marketplace.Controllers
 
             return Ok(orders);
 
+        }
+
+        [Authorize(Roles = "Seller")]
+        [HttpGet("sellerorders")]
+        public async Task<IActionResult> GetSellerOrders()
+        {
+            var userId = _userManager.GetUserId(User);
+            var seller = _context.Sellers.FirstOrDefault(u => u.UserId == userId);
+
+            if (seller == null)
+            {
+                return BadRequest("Seller not found");
+            }
+
+            var orders = _context.Orders
+                .Include(o => o.Gigs)
+                    .ThenInclude(g => g.SellerAd)
+                .Where(o => o.Seller.UserId == userId).ToList();
+
+            return Ok(orders.Select(o => new
+            {
+                o.Id,
+                o.ExtOrderId,
+                o.Status,
+                o.OrderDate,
+                o.Price,
+                o.Quantity,
+                o.AdditionalInstructions,
+                Gig = new
+                {
+                    o.Gigs.Id,
+                    Title = o.Gigs.SellerAd.Title,
+                    Description = o.Gigs.SellerAd.Description
+                }
+            }));
+
+        }
+        [Authorize]
+        [HttpGet("get/{id}")]
+        public async Task<IActionResult> GetOrderDetails(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var order = await _context.Orders
+                .Include(o => o.Buyer).ThenInclude(b => b.User)
+                .Include(o => o.Seller).ThenInclude(s => s.User)
+                .Include(o => o.Gigs).ThenInclude(g => g.SellerAd)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null) return NotFound("Order not found");
+
+            if (order.Buyer.UserId != userId && order.Seller.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            return Ok(new
+            {
+                order.Id,
+                order.ExtOrderId,
+                order.Status,
+                order.OrderDate,
+                order.Price,
+                order.Quantity,
+                order.AdditionalInstructions,
+                Gig = new
+                {
+                    order.Gigs.Id,
+                    Title = order.Gigs.SellerAd.Title,
+                    Description = order.Gigs.SellerAd.Description
+                },
+                Buyer = new
+                {
+                    order.Buyer.UserId,
+                    FirstName = order.Buyer.User.FirstName,
+                    LastName = order.Buyer.User.LastName
+                },
+                Seller = new
+                {
+                    order.Seller.UserId,
+                    FirstName = order.Seller.User.FirstName,
+                    LastName = order.Seller.User.LastName
+                }
+            });
         }
     }
 }

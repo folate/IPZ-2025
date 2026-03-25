@@ -15,6 +15,7 @@ onMounted(() =>
     case ROLES.SELLER:
       router.replace("/seller/profile")
       break
+    case ROLES.BUYER:
     case ROLES.USER:
       router.replace("/buyer/profile")
       break

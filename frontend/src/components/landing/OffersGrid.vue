@@ -1,6 +1,12 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { useRoute } from "vue-router";
+import { useAuth } from "@/stores/auth";
+import { ROLES } from "@/auth/roles";
 import OfferCard from "./OfferCard.vue";
+
+const route = useRoute();
+const { hasRole } = useAuth();
 
 const props = defineProps({
   limit: { type: Number, default: 10 },
@@ -15,8 +21,10 @@ const buyerLoading = ref(false);
 const error = ref("");
 const buyerError = ref("");
 
-const searchTerm = ref("");
-const category = ref("");
+const searchTerm = computed(() => route.query.q || "");
+const category = computed(() => route.query.category || "");
+const sortBy = computed(() => route.query.sortBy || "");
+const order = computed(() => route.query.order || "");
 function norm(s) {
   return String(s ?? "")
     .toLowerCase()
@@ -63,12 +71,19 @@ async function loadOffers() {
   try {
     const q = norm(searchTerm.value);
     const cat = category.value;
-    let url = `/api/SellerAd/all/${props.limit}`;
-    if (q || cat) {
-      url = `/api/Search?search=${encodeURIComponent(q)}&category=${encodeURIComponent(cat)}`;
+    const sort = sortBy.value;
+    const ord = order.value;
+    let url = `/api/SellerAd/all/${props.limit}?t=${Date.now()}`;
+    if (q || cat || sort || ord) {
+      url = `/api/Search?search=${encodeURIComponent(q)}&category=${encodeURIComponent(cat)}&sortBy=${encodeURIComponent(sort)}&order=${encodeURIComponent(ord)}&t=${Date.now()}`;
     }
     console.log(url);
-    const res = await fetch(url, { credentials: "include" });
+    const res = await fetch(url, { credentials: "include", cache: "no-store" });
+
+    if (res.status === 204) {
+      offers.value = [];
+      return;
+    }
 
     if (!res.ok) {
       offers.value = [];
@@ -102,6 +117,12 @@ async function loadBuyerAds() {
       return;
     }
 
+    if (res.status === 204) {
+      buyerAds.value = [];
+      buyerError.value = "";
+      return;
+    }
+
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       buyerAds.value = [];
@@ -119,14 +140,9 @@ async function loadBuyerAds() {
   }
 }
 
-function onSearchChanged(e) {
-  searchTerm.value = e?.detail ?? "";
+watch([searchTerm, category], () => {
   loadOffers();
-}
-function onCategoryChanged(e) {
-  category.value = e.detail ?? "";
-  loadOffers();
-}
+});
 
 function onSellerCreated() {
   loadOffers();
@@ -140,17 +156,13 @@ onMounted(() => {
   loadOffers();
   loadBuyerAds();
 
-  window.addEventListener("search:changed", onSearchChanged);
-  window.addEventListener("category:changed", onCategoryChanged);
   window.addEventListener("sellerad:created", onSellerCreated);
   window.addEventListener("buyerad:created", onBuyerCreated);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("search:changed", onSearchChanged);
   window.removeEventListener("sellerad:created", onSellerCreated);
   window.removeEventListener("buyerad:created", onBuyerCreated);
-  window.removeEventListener("category:changed", onCategoryChanged);
 });
 </script>
 
@@ -174,7 +186,12 @@ onUnmounted(() => {
       <p class="text-zinc-500 dark:text-zinc-400 text-lg">Brak dostępnych ofert w tym momencie.</p>
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <transition-group 
+      v-else 
+      tag="div" 
+      name="list"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+    >
       <RouterLink
         v-for="o in filteredOffers"
         :key="o.id"
@@ -183,35 +200,54 @@ onUnmounted(() => {
       >
         <OfferCard :offer="o" />
       </RouterLink>
-    </div>
+    </transition-group>
 
-    <div class="flex items-center justify-between mb-8 mt-16">
-      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-        Zlecenia klientów
-      </h2>
-    </div>
+    <div v-if="hasRole(ROLES.SELLER)">
+      <div class="flex items-center justify-between mb-8 mt-16">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Zlecenia klientów
+        </h2>
+      </div>
 
-    <div v-if="buyerLoading" class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>
-    </div>
-    
-    <div v-else-if="buyerError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-6 rounded-2xl text-center border border-red-100 dark:border-red-900/30">
-      <p class="font-medium">{{ buyerError }}</p>
-    </div>
-    
-    <div v-else-if="filteredBuyerAds.length === 0" class="bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center rounded-2xl border border-zinc-200 dark:border-zinc-800">
-      <p class="text-zinc-500 dark:text-zinc-400 text-lg">Brak dostępnych zleceń w tym momencie.</p>
-    </div>
+      <div v-if="buyerLoading" class="flex justify-center items-center py-20">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>
+      </div>
+      
+      <div v-else-if="buyerError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-6 rounded-2xl text-center border border-red-100 dark:border-red-900/30">
+        <p class="font-medium">{{ buyerError }}</p>
+      </div>
+      
+      <div v-else-if="filteredBuyerAds.length === 0" class="bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <p class="text-zinc-500 dark:text-zinc-400 text-lg">Brak dostępnych zleceń w tym momencie.</p>
+      </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <RouterLink
-        v-for="o in filteredBuyerAds"
-        :key="o.id"
-        :to="`/request/${o.id}`"
-        class="block h-full"
+      <transition-group 
+        v-else 
+        tag="div" 
+        name="list"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
       >
-        <OfferCard :offer="o" />
-      </RouterLink>
+        <RouterLink
+          v-for="o in filteredBuyerAds"
+          :key="o.id"
+          :to="`/request/${o.id}`"
+          class="block h-full"
+        >
+          <OfferCard :offer="o" />
+        </RouterLink>
+      </transition-group>
     </div>
   </section>
 </template>
+
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+</style>
