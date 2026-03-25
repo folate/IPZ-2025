@@ -56,6 +56,16 @@ function pickUserName(o) {
 
 const user = computed(() => pickUserName(props.offer) || "USER");
 const title = computed(() => props.offer?.title || "TITLE");
+const category = computed(() => props.offer?.category || "CATEGORY");
+
+const displayImage = computed(() => {
+  if (props.offer.image) return props.offer.image;
+  if (props.offer.photos && Array.isArray(props.offer.photos) && props.offer.photos.length > 0) {
+    const p = props.offer.photos.find(p => p.isMain) || props.offer.photos[0];
+    return p ? p.url : null;
+  }
+  return null;
+});
 
 const price = computed(() => {
   const gigs = props.offer?.gigs;
@@ -82,19 +92,17 @@ const price = computed(() => {
 </script>
 
 <template>
-  <Card class="group overflow-hidden rounded-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/5 hover:border-teal-200 dark:hover:border-teal-900/50 flex flex-col h-full cursor-pointer">
+  <Card class="group overflow-hidden rounded-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/5 hover:border-teal-200 dark:hover:border-teal-900/50 flex flex-col h-full cursor-pointer pb-6 pt-0">
     <div class="h-44 w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden relative">
-      <img v-if="offer.image" :src="offer.image" :alt="title" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+      <img v-if="displayImage" :src="displayImage" :alt="title" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
       <div v-else class="h-full w-full flex items-center justify-center text-zinc-300 dark:text-zinc-700 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-900 dark:to-zinc-800">
         <span class="text-xs font-bold uppercase tracking-widest opacity-50">Brak Zdjęcia</span>
       </div>
     </div>
     
-    <CardContent class="flex-grow p-4 flex flex-col">
-      <div class="flex items-center gap-1 text-amber-400 mb-2">
-        <Star class="h-4 w-4 fill-current" />
-        <span class="text-sm font-bold text-zinc-700 dark:text-zinc-300 ml-1">5.0</span>
-        <span class="text-xs text-zinc-400 font-normal ml-1">(12)</span>
+    <CardContent class="flex-grow p-4 flex flex-col group-hover:bg-zinc-50/50 dark:group-hover:bg-zinc-900/30 transition-colors duration-300">
+      <div class="flex items-center gap-1 ">
+        <span class="text-xs text-zinc-400 font-normal">{{ category }}</span>
       </div>
 
       <h3 class="font-semibold text-lg leading-tight text-zinc-900 dark:text-zinc-50 line-clamp-2 mb-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">

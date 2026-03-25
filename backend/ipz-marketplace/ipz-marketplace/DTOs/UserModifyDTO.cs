@@ -17,9 +17,8 @@ namespace ipz_marketplace.DTOs
         [Required]
         public string Login { get; set; }
 
-        [Required]
         [MinLength(8)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         public bool isFreelancer { get; set; }
     }

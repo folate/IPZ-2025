@@ -1,16 +1,17 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/stores/auth";
-import LandingHeader from "@/components/landing/LandingHeader.vue";
 import Container from "@/components/ui/Container.vue";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, UserCircle, Calendar, ShoppingBag, Clock, Package, ExternalLink, RefreshCw } from "lucide-vue-next";
+import { Settings, UserCircle, Calendar, ShoppingBag, Clock, Package, ExternalLink, RefreshCw, Mail } from "lucide-vue-next";
 
 const router = useRouter();
 const { isLoggedIn, initAuth } = useAuth();
 const loading = ref(true);
+const orders = ref([]);
+const myAds = ref([]);
 
 onMounted(async () => {
   await initAuth();
@@ -18,15 +19,25 @@ onMounted(async () => {
     router.push("/login");
     return;
   }
-  fetchProfileInfo();
+  await fetchProfileInfo();
+  await fetchOrders();
+  await fetchMyAds();
+  loading.value = false;
 });
 
 const ProfileInfo = reactive({
   firstName: "",
   lastName: "",
-  JoinDate: "",
-  TotalOrders: null,
-  LastOrder: "",
+  email: "",
+  totalOrders: 0,
+  lastOrderDate: null,
+  preferredPaymentMethod: ""
+});
+
+const lastOrderDateFormatted = computed(() => {
+  if (!ProfileInfo.lastOrderDate) return 'Brak historii';
+  const date = new Date(ProfileInfo.lastOrderDate);
+  return date.toLocaleDateString("pl-PL");
 });
 
 const fetchProfileInfo = async () => {
@@ -41,23 +52,44 @@ const fetchProfileInfo = async () => {
     const result = await response.json();
     ProfileInfo.firstName = result.firstName;
     ProfileInfo.lastName = result.lastName;
-    ProfileInfo.JoinDate = result.joinedDate?.slice(0, 10) ?? "Brak danych";
-    ProfileInfo.TotalOrders = result.totalOrders ?? 0;
-    ProfileInfo.LastOrder = result.lastOrderDate?.slice(0, 10) ?? "Brak zamówień";
+    ProfileInfo.email = result.email;
+    ProfileInfo.totalOrders = result.totalOrders;
+    ProfileInfo.lastOrderDate = result.lastOrderDate;
+    ProfileInfo.preferredPaymentMethod = result.preferredPaymentMethod || "Visa / Mastercard";
   } catch (err) {
     console.error("Profile Error:", err);
-  } finally {
-    loading.value = false;
   }
 };
+
+const fetchOrders = async () => {
+  try {
+    const response = await fetch("/api/Order/myorders", { credentials: "include" });
+    if (response.ok) {
+      orders.value = await response.json();
+    }
+  } catch (err) {
+    console.error("Orders Error:", err);
+  }
+};
+
+const fetchMyAds = async () => {
+  try {
+    const response = await fetch("/api/BuyerAd/UserAds", { credentials: "include" });
+    if (response.ok) {
+      myAds.value = await response.json();
+    }
+  } catch (err) {
+    console.error("Ads Error:", err);
+  }
+};
+
 const openOrderRevision = (id) => {
   router.push(`/order/${id}/revision`);
 };
 </script>
 
 <template>
-  <div class="min-h-svh bg-zinc-50 dark:bg-zinc-950 pb-20">
-    <LandingHeader />
+  <div class="bg-zinc-50 dark:bg-zinc-950 pb-20">
     
     <Container>
       <div class="mt-8 w-full flex flex-col gap-6">
@@ -84,7 +116,7 @@ const openOrderRevision = (id) => {
 
         <template v-else>
           <!-- Main Profile Card -->
-          <Card class="w-full shadow-lg shadow-teal-900/5 border-zinc-200 dark:border-zinc-800 overflow-hidden relative">
+          <Card class="w-full shadow-lg shadow-teal-900/5 border-zinc-200 dark:border-zinc-800 overflow-hidden relative animate-in fade-in zoom-in-95 duration-500 fill-mode-both">
             <div class="absolute right-0 top-0 w-32 h-32 bg-teal-500/10 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none"></div>
             <CardContent class="p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
               
@@ -97,28 +129,28 @@ const openOrderRevision = (id) => {
                   Cześć, {{ ProfileInfo.firstName }} {{ ProfileInfo.lastName }}!
                 </h2>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
                   <div class="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
-                    <Calendar class="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                    <div class="flex flex-col text-left">
-                      <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Dołączenie</span>
-                      <span class="font-semibold text-zinc-900 dark:text-zinc-100">{{ ProfileInfo.JoinDate }}</span>
+                    <Mail class="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+                    <div class="flex flex-col text-left overflow-hidden">
+                      <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Adres E-mail</span>
+                      <span class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ ProfileInfo.email }}</span>
                     </div>
                   </div>
 
                   <div class="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
-                    <ShoppingBag class="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                    <div class="flex flex-col text-left">
-                      <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Zamówień</span>
-                      <span class="font-semibold text-zinc-900 dark:text-zinc-100">{{ ProfileInfo.TotalOrders }}</span>
+                    <ShoppingBag class="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+                    <div class="flex flex-col text-left overflow-hidden">
+                      <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Ilość zamówień</span>
+                      <span class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ ProfileInfo.totalOrders }}</span>
                     </div>
                   </div>
 
                   <div class="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
-                    <Clock class="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                    <div class="flex flex-col text-left">
-                      <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Ostatnie Zam.</span>
-                      <span class="font-semibold text-zinc-900 dark:text-zinc-100">{{ ProfileInfo.LastOrder }}</span>
+                    <Calendar class="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+                    <div class="flex flex-col text-left overflow-hidden">
+                      <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Ostatni zakup</span>
+                      <span class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ lastOrderDateFormatted }}</span>
                     </div>
                   </div>
                 </div>
@@ -138,49 +170,97 @@ const openOrderRevision = (id) => {
                 <div>
                   <h3 class="text-lg font-bold mb-3 text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-                    W trakcie (In Progress)
+                    Historia Zamówień
                   </h3>
                   
-                  <!-- Placeholder Order -->
-                  <div 
-                    class="group relative bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md hover:border-teal-200 dark:hover:border-teal-900/50 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
-                    @click="openOrderRevision('ORD-001')"
-                  >
-                    <div class="flex items-center gap-4">
-                      <div class="h-12 w-12 shrink-0 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400">
-                        <RefreshCw class="h-6 w-6 font-bold" />
+                  <div v-if="orders.length === 0" class="bg-zinc-50 dark:bg-zinc-900/50 rounded-xl p-6 text-center border border-zinc-100 dark:border-zinc-800 border-dashed">
+                    <span class="text-zinc-500 font-medium select-none">Brak złożonych zamówień. Twoja historia jest pusta.</span>
+                  </div>
+
+                  <div v-else class="flex flex-col gap-4">
+                    <div 
+                      v-for="order in orders" :key="order.id"
+                      class="group relative bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md hover:border-teal-200 dark:hover:border-teal-900/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div class="flex items-center gap-4 cursor-pointer flex-1" @click="openOrderRevision(order.id)">
+                        <div class="h-12 w-12 shrink-0 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                          <Package class="h-6 w-6 font-bold" />
+                        </div>
+                        <div class="flex flex-col">
+                          <span class="text-sm font-bold text-zinc-400">Zamówienie #{{ order.id }}</span>
+                          <h4 class="font-bold text-zinc-900 dark:text-zinc-100 text-lg line-clamp-1">
+                             {{ order.status === 'Paid' ? 'Zamówienie opłacone' : 'Sprawdź szczegóły' }}
+                          </h4>
+                          <span class="text-sm text-zinc-500 dark:text-zinc-400 font-medium whitespace-nowrap">{{ order.price }} zł</span>
+                        </div>
                       </div>
-                      <div class="flex flex-col">
-                        <span class="text-sm font-bold text-zinc-400">Zamówienie #ORD-001</span>
-                        <h4 class="font-bold text-zinc-900 dark:text-zinc-100 text-lg">Nowoczesna strona internetowa WordPress</h4>
-                        <span class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Od: WebDevPro</span>
+                      
+                      <div class="flex flex-wrap items-center gap-4 md:border-l border-zinc-100 dark:border-zinc-800 md:pl-6 min-w-40">
+                        <div class="flex flex-col">
+                          <span class="text-sm text-zinc-500">Status</span>
+                          <span class="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                            {{ order.status }}
+                          </span>
+                        </div>
+                        <Button variant="ghost" size="icon" class="ml-auto text-zinc-400 group-hover:text-teal-600 transition-colors" @click="openOrderRevision(order.id)">
+                          <ExternalLink class="h-5 w-5" />
+                        </Button>
                       </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-4 md:border-l border-zinc-100 dark:border-zinc-800 md:pl-6 min-w-40">
-                      <div class="flex flex-col">
-                        <span class="text-sm text-zinc-500">Status</span>
-                        <span class="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                          Oczekuje na recenzję
-                        </span>
-                      </div>
-                      <Button variant="ghost" size="icon" class="ml-auto text-zinc-400 group-hover:text-teal-600 transition-colors">
-                        <ExternalLink class="h-5 w-5" />
-                      </Button>
                     </div>
                   </div>
 
                 </div>
-                
-                <div>
-                  <h3 class="text-lg font-bold mb-3 text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-700"></span>
-                    Zakończone (Finished)
-                  </h3>
-                  <div class="bg-zinc-50 dark:bg-zinc-900/50 rounded-xl p-6 text-center border border-zinc-100 dark:border-zinc-800 border-dashed">
-                    <span class="text-zinc-500 font-medium select-none">Brak zakończonych zamówień.</span>
-                  </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <!-- My Ads Summary Card -->
+          <Card class="w-full shadow-lg shadow-teal-900/5 border-zinc-200 dark:border-zinc-800">
+            <CardHeader class="pb-2 border-b border-zinc-100 dark:border-zinc-800/50">
+              <CardTitle class="text-xl">Twoje Ogłoszenia (Zlecenia Kupującego)</CardTitle>
+            </CardHeader>
+            <CardContent class="p-0">
+              <div class="p-6 md:p-8 flex flex-col gap-6">
+
+                <div v-if="myAds.length === 0" class="bg-zinc-50 dark:bg-zinc-900/50 rounded-xl p-6 text-center border border-zinc-100 dark:border-zinc-800 border-dashed">
+                  <span class="text-zinc-500 font-medium select-none">Brak ogłoszeń.</span>
                 </div>
+
+                <div v-else class="flex flex-col gap-4">
+                    <div 
+                      v-for="ad in myAds" :key="ad.id"
+                      class="group relative bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md hover:border-teal-200 dark:hover:border-teal-900/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div class="flex items-center gap-4 cursor-pointer flex-1" @click="router.push(`/request/${ad.id}`)">
+                        <div class="h-12 w-12 shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                          <Package class="h-6 w-6 font-bold" />
+                        </div>
+                        <div class="flex flex-col">
+                          <span class="text-sm font-bold text-zinc-400">Ogłoszenie #{{ ad.id }}</span>
+                          <h4 class="font-bold text-zinc-900 dark:text-zinc-100 text-lg line-clamp-1">
+                             {{ ad.title }}
+                          </h4>
+                          <span class="text-sm text-zinc-500 dark:text-zinc-400 font-medium whitespace-nowrap">{{ ad.budget }} zł / Do {{ new Date(ad.deadline).toLocaleDateString() }}</span>
+                        </div>
+                      </div>
+                      
+                      <div class="flex flex-wrap items-center gap-4 md:border-l border-zinc-100 dark:border-zinc-800 md:pl-6 min-w-40">
+                        <div class="flex flex-col">
+                          <span class="text-sm text-zinc-500">Status</span>
+                          <span v-if="!ad.isClosed" class="font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+                            Aktywne
+                          </span>
+                          <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                            Zamknięte
+                          </span>
+                        </div>
+                        <Button variant="ghost" size="icon" class="ml-auto text-zinc-400 group-hover:text-indigo-600 transition-colors" @click="router.push(`/request/${ad.id}`)">
+                          <ExternalLink class="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
 
               </div>
             </CardContent>

@@ -8,5 +8,7 @@
         public string Status { get; set; }
         public int OrderId { get; set; }
         public Order Order { get; set; }
+        public string SenderId { get; set; }
+        public ICollection<RevisionFile> Files { get; set; } = new List<RevisionFile>();
     }
 }

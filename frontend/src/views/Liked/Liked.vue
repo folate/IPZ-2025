@@ -1,5 +1,4 @@
 <script setup>
-import LandingHeader from "@/components/landing/LandingHeader.vue";
 import Container from "@/components/ui/Container.vue";
 import OfferCard from "@/components/landing/OfferCard.vue";
 import { Loader2 } from "lucide-vue-next";
@@ -48,8 +47,7 @@ onMounted(fetchDetails);
 </script>
 
 <template>
-  <div class="min-h-svh bg-zinc-50 dark:bg-zinc-950 pb-20">
-    <LandingHeader />
+  <div class="bg-zinc-50 dark:bg-zinc-950 pb-20">
 
     <Container>
       <div class="mt-8 w-full flex flex-col gap-6">

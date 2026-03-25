@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import { useAlert } from "@/stores/alert"
 import { ErrorMessage, Field, Form } from "vee-validate"
 import * as yup from "yup"
 
 import { useAuth } from "@/stores/auth"
 
-import LandingHeader from "@/components/landing/LandingHeader.vue"
 import Container from "@/components/ui/Container.vue"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,10 +19,25 @@ import { CreditCard, Loader2, CheckCircle2, ShieldCheck, Lock } from "lucide-vue
 const route = useRoute()
 const router = useRouter()
 const { isLoggedIn, initAuth } = useAuth()
+const { showAlert } = useAlert()
 
 const isProcessing = ref(false)
 const isSuccess = ref(false)
 const pageLoading = ref(true)
+
+const preferredPaymentMethod = ref("")
+
+const fetchBuyerInfo = async () => {
+  try {
+    const res = await fetch("/api/Buyer/me", { credentials: "include" })
+    if (res.ok) {
+      const buyerData = await res.json()
+      if (buyerData.preferredPaymentMethod) {
+         preferredPaymentMethod.value = buyerData.preferredPaymentMethod;
+      }
+    }
+  } catch(e) { console.error("Error fetching buyer info:", e) }
+}
 
 const orderDetails = ref({
   gigId: route.query.gigId,
@@ -48,42 +63,27 @@ onMounted(async () => {
     return
   }
   
+  await fetchBuyerInfo();
+  
   pageLoading.value = false
 })
 
 const schema = yup.object({
-  cardNumber: yup.string()
-    .required("Numer karty jest wymagany")
-    .matches(/^[0-9]{16}$/, "Numer karty musi składać się z 16 cyfr"),
-  expiryDate: yup.string()
-    .required("Data ważności jest wymagana")
-    .matches(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, "Format MM/YY"),
-  cvv: yup.string()
-    .required("CVV jest wymagany")
-    .matches(/^[0-9]{3,4}$/, "CVV musi mieć 3 lub 4 cyfry"),
-  nameOnCard: yup.string()
-    .required("Imię i nazwisko jest wymagane")
-    .min(3, "Co najmniej 3 znaki"),
   additionalInstructions: yup.string().optional()
 })
 
 async function onSubmit(values) {
   isProcessing.value = true
   
-  // Symulacja połączenia z bramką płatności
-  await new Promise(resolve => setTimeout(resolve, 2000))
-
   try {
     const res = await fetch(`/api/Order/create`, {
-      method: "PUT",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         quantity: 1,
-        price: Number(orderDetails.value.price),
         additionalInstructions: values.additionalInstructions || "",
         aproxDeliveryTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        gigId: Number(orderDetails.value.gigId),
-        sellerId: Number(orderDetails.value.sellerId),
+        gigId: Number(orderDetails.value.gigId)
       }),
     });
     
@@ -91,24 +91,30 @@ async function onSubmit(values) {
       throw new Error(`Błąd zakupu (${res.status})`);
     }
     
-    isProcessing.value = false
-    isSuccess.value = true
+    const data = await res.json();
     
-    setTimeout(() => {
-      router.push("/buyer/profile") 
-    }, 2000)
+    if (data && data.url) {
+      // PayU returned a Redirect URL
+      window.location.href = data.url;
+    } else {
+      isProcessing.value = false
+      isSuccess.value = true
+      
+      setTimeout(() => {
+        router.push("/thanks") 
+      }, 2000)
+    }
     
   } catch (err) {
     console.error(err)
-    alert("Błąd podczas przetwarzania płatności: " + err.message)
+    showAlert("Błąd płatności", "Wystąpił błąd podczas przetwarzania płatności: " + err.message, "destructive")
     isProcessing.value = false
   }
 }
 </script>
 
 <template>
-  <div class="min-h-svh bg-zinc-50 dark:bg-zinc-950 pb-20">
-    <LandingHeader />
+  <div class="bg-zinc-50 dark:bg-zinc-950 pb-20">
 
     <Container>
       
@@ -147,9 +153,10 @@ async function onSubmit(values) {
           <!-- Left Column: Payment Form -->
           <div class="lg:col-span-8">
             <Card class="border-zinc-200 dark:border-zinc-800 shadow-xl shadow-teal-900/5 overflow-hidden">
-              <div class="bg-zinc-100/50 dark:bg-zinc-900/50 px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
-                <CreditCard class="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-50">Metoda płatności (Karta)</h2>
+              <div class="bg-zinc-100/50 dark:bg-zinc-900/50 px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-50">Informacje do zamówienia</h2>
+                </div>
               </div>
               
               <CardContent class="p-6 md:p-8">
@@ -157,54 +164,14 @@ async function onSubmit(values) {
                 <Form id="paymentForm"
                   :validation-schema="schema"
                   :initial-values="{
-                    cardNumber: '1234567890123456',
-                    expiryDate: '12/26',
-                    cvv: '123',
-                    nameOnCard: 'Jan Kowalski',
                     additionalInstructions: ''
                   }"
                   @submit="onSubmit"
                 >
                   <div class="flex flex-col gap-6">
                     
-                    <div class="flex flex-col gap-2">
-                      <Label for="nameOnCard" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Imię i nazwisko na karcie</Label>
-                      <Field name="nameOnCard" v-slot="{ field }">
-                        <Input id="nameOnCard" v-bind="field" placeholder="Jan Kowalski" class="h-12 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 transition-colors" />
-                      </Field>
-                      <div class="h-4"><ErrorMessage name="nameOnCard" class="text-xs text-red-500 font-medium block" /></div>
-                    </div>
-
-                    <div class="flex flex-col gap-2">
-                      <Label for="cardNumber" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Numer karty</Label>
-                      <Field name="cardNumber" v-slot="{ field }">
-                        <Input id="cardNumber" v-bind="field" placeholder="0000 0000 0000 0000" class="h-12 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 font-mono transition-colors tracking-widest text-lg" />
-                      </Field>
-                      <div class="h-4"><ErrorMessage name="cardNumber" class="text-xs text-red-500 font-medium block" /></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6">
-                      <div class="flex flex-col gap-2">
-                        <Label for="expiryDate" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Ważność</Label>
-                        <Field name="expiryDate" v-slot="{ field }">
-                          <Input id="expiryDate" v-bind="field" placeholder="MM/YY" class="h-12 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 font-mono transition-colors" />
-                        </Field>
-                        <div class="h-4"><ErrorMessage name="expiryDate" class="text-xs text-red-500 font-medium block" /></div>
-                      </div>
-                      
-                      <div class="flex flex-col gap-2">
-                        <Label for="cvv" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                          CVV/CVC <Lock class="h-3.5 w-3.5 text-zinc-400" />
-                        </Label>
-                        <Field name="cvv" v-slot="{ field }">
-                          <Input id="cvv" type="password" v-bind="field" placeholder="123" class="h-12 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 font-mono transition-colors" />
-                        </Field>
-                        <div class="h-4"><ErrorMessage name="cvv" class="text-xs text-red-500 font-medium block" /></div>
-                      </div>
-                    </div>
-
                     <!-- Additional Instructions -->
-                    <div class="flex flex-col gap-2 mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/50">
+                    <div class="flex flex-col gap-2">
                       <Label for="additionalInstructions" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Dodatkowe instrukcje dla sprzedawcy (opcjonalne)</Label>
                       <Field name="additionalInstructions" v-slot="{ field }">
                         <Textarea id="additionalInstructions" v-bind="field" placeholder="Masz jakieś szczególne wymagania co do tego zamówienia?" class="min-h-[100px] rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-teal-500 resize-y" />

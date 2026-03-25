@@ -228,6 +228,9 @@ namespace ipz_marketplace.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AcceptedOfferId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Budget")
                         .HasColumnType("integer");
 
@@ -248,6 +251,9 @@ namespace ipz_marketplace.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -257,6 +263,45 @@ namespace ipz_marketplace.Migrations
                     b.HasIndex("BuyerId");
 
                     b.ToTable("BuyerAds");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.BuyerAdOffer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BuyerAdId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Deadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FreelancerId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerAdId");
+
+                    b.HasIndex("FreelancerId");
+
+                    b.ToTable("BuyerAdOffers");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Category", b =>
@@ -275,6 +320,40 @@ namespace ipz_marketplace.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Conversation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("LastMessageAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UnreadCountUser1")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UnreadCountUser2")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("User1Id")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("User2Id")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("User1Id");
+
+                    b.HasIndex("User2Id");
+
+                    b.ToTable("Conversations");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Gigs", b =>
@@ -304,6 +383,40 @@ namespace ipz_marketplace.Migrations
                     b.HasIndex("SellerAdId");
 
                     b.ToTable("Gigs");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Order", b =>
@@ -360,6 +473,40 @@ namespace ipz_marketplace.Migrations
                     b.ToTable("Orders");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BuyerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId");
+
+                    b.HasIndex("SellerId");
+
+                    b.ToTable("Reviews");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Revision", b =>
                 {
                     b.Property<int>("Id")
@@ -378,6 +525,10 @@ namespace ipz_marketplace.Migrations
                     b.Property<DateTime>("RequestDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -387,6 +538,36 @@ namespace ipz_marketplace.Migrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("Revisions");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.RevisionFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RevisionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StoredName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RevisionId");
+
+                    b.ToTable("RevisionFiles");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
@@ -463,6 +644,9 @@ namespace ipz_marketplace.Migrations
                     b.Property<string>("FreelancerId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -643,6 +827,44 @@ namespace ipz_marketplace.Migrations
                     b.Navigation("Buyer");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.BuyerAdOffer", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.BuyerAd", "BuyerAd")
+                        .WithMany("Offers")
+                        .HasForeignKey("BuyerAdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.Seller", "Freelancer")
+                        .WithMany()
+                        .HasForeignKey("FreelancerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BuyerAd");
+
+                    b.Navigation("Freelancer");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Conversation", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.User", "User1")
+                        .WithMany()
+                        .HasForeignKey("User1Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.User", "User2")
+                        .WithMany()
+                        .HasForeignKey("User2Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User1");
+
+                    b.Navigation("User2");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Gigs", b =>
                 {
                     b.HasOne("ipz_marketplace.Entities.SellerAd", "SellerAd")
@@ -652,6 +874,25 @@ namespace ipz_marketplace.Migrations
                         .IsRequired();
 
                     b.Navigation("SellerAd");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Message", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Order", b =>
@@ -681,6 +922,25 @@ namespace ipz_marketplace.Migrations
                     b.Navigation("Seller");
                 });
 
+            modelBuilder.Entity("ipz_marketplace.Entities.Review", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.Buyer", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ipz_marketplace.Entities.Seller", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Buyer");
+
+                    b.Navigation("Seller");
+                });
+
             modelBuilder.Entity("ipz_marketplace.Entities.Revision", b =>
                 {
                     b.HasOne("ipz_marketplace.Entities.Order", "Order")
@@ -690,6 +950,17 @@ namespace ipz_marketplace.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.RevisionFile", b =>
+                {
+                    b.HasOne("ipz_marketplace.Entities.Revision", "Revision")
+                        .WithMany("Files")
+                        .HasForeignKey("RevisionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Revision");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.Seller", b =>
@@ -723,7 +994,19 @@ namespace ipz_marketplace.Migrations
 
             modelBuilder.Entity("ipz_marketplace.Entities.BuyerAd", b =>
                 {
+                    b.Navigation("Offers");
+
                     b.Navigation("UsersBidding");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("ipz_marketplace.Entities.Revision", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("ipz_marketplace.Entities.SellerAd", b =>

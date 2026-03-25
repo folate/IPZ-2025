@@ -39,11 +39,31 @@ namespace ipz_marketplace.Services
             user.LastName = userInfo.LastName ?? user.LastName;
             user.Email = userInfo.Email ?? user.Email;
             user.IsFreelancer = userInfo.isFreelancer;
-            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, userInfo.Password);
+            if (!string.IsNullOrEmpty(userInfo.Password))
+            {
+                user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, userInfo.Password);
+            }
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
                 return new OkObjectResult("User modified successfully");
+            }
+            return new BadRequestObjectResult(result.Errors);
+        }
+
+        public async Task<IActionResult> ChangePassword(ChangePasswordDTO info)
+        {
+            var user = await _userManager.FindByNameAsync(info.Login);
+            if (user == null)
+            {
+                return new NotFoundObjectResult("User not found");
+            }
+
+            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, info.NewPassword);
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return new OkObjectResult("Password changed successfully");
             }
             return new BadRequestObjectResult(result.Errors);
         }

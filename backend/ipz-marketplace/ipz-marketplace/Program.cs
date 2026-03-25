@@ -40,6 +40,7 @@ public class Program
         builder.Services.AddScoped<OrderTransactionService>();
 
         builder.Services.AddControllers();
+        builder.Services.AddSignalR();
         
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -150,6 +151,7 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
+        app.MapHub<ipz_marketplace.Hubs.ChatHub>("/chathub");
 
         await app.RunAsync();
     }

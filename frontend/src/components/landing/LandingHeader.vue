@@ -12,13 +12,16 @@ import {
   Heart, 
   ListX, 
   User, 
-  LogOut 
+  LogOut,
+  RefreshCw,
+  Briefcase,
+  MessageCircle
 } from "lucide-vue-next";
 
 const showAdForm = VueRef(false);
 
 const router = useRouter();
-const { isLoggedIn, initAuth, logout, hasRole } = useAuth();
+const { state, isLoggedIn, initAuth, logout, hasRole } = useAuth();
 
 onMounted(async () => {
   await initAuth();
@@ -32,7 +35,7 @@ const goToProfile = () => {
 const iconItems = computed(() => {
   if (!isLoggedIn.value) {
     return [
-      { key: "cart", icon: ShoppingCart, onClick: () => {} },
+      // { key: "cart", icon: ShoppingCart, onClick: () => {} },
       {
         key: "login",
         icon: LogIn,
@@ -41,31 +44,50 @@ const iconItems = computed(() => {
     ];
   }
 
-  return [
-    {
+  const items = [];
+
+  if (hasRole(ROLES.SELLER)) {
+    items.push({
       key: "adform",
       label: "Utwórz Ogłoszenie Usługi",
       icon: PlusCircle,
       onClick: () => (showAdForm.value = true),
-    },
-    {
+    });
+    // items.push({ 
+    //   key: "notfulfilled", 
+    //   label: "Niespełnione",
+    //   icon: ListX, 
+    //   onClick: () => {} 
+    // });
+  }
+
+  if (hasRole(ROLES.BUYER)) {
+    items.push({
       key: "upload",
       label: "Dodaj Zlecenie Usługi",
       icon: FilePlus,
       onClick: () => router.push("/buyer/ad"),
+    });
+    items.push({ key: "cart", label: "Koszyk", icon: ShoppingCart, onClick: () => {} });
+  }
+
+  items.push(
+    { 
+      key: "chat",
+      label: "Wiadomości",
+      icon: MessageCircle, 
+      onClick: () => router.push("/chat") 
     },
     { 
-      key: "favourites", 
-      label: "Ulubione",
+      key: "liked",
+      label: "Zapisane",
       icon: Heart, 
       onClick: () => router.push("/liked") 
-    },
-    { 
-      key: "notfulfilled", 
-      label: "Niespełnione",
-      icon: ListX, 
-      onClick: () => {} 
-    },
+    }
+  );
+
+
+  items.push(
     {
       key: "user",
       label: "Profil",
@@ -80,9 +102,10 @@ const iconItems = computed(() => {
         await logout();
         router.push("/");
       },
-    },
-    { key: "cart", label: "Koszyk", icon: ShoppingCart, onClick: () => {} },
-  ];
+    }
+  );
+
+  return items;
 });
 </script>
 

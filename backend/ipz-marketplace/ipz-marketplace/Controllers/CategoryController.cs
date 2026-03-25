@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ipz_marketplace.Controllers
@@ -34,7 +34,7 @@ namespace ipz_marketplace.Controllers
                 .Select(c => new 
                 {
                     c.Name,
-                    AdsCount = _context.SellerAds.Count(a => a.Category == c.Name) + _context.BuyerAds.Count(a => a.Category == c.Name)
+                    AdsCount = _context.SellerAds.Count(a => a.Category == c.Name && !a.IsPrivate) + _context.BuyerAds.Count(a => a.Category == c.Name)
                 })
                 .OrderByDescending(c => c.AdsCount)
                 .Take(15)

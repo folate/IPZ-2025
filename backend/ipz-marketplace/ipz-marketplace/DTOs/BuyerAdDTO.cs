@@ -1,4 +1,4 @@
-﻿namespace ipz_marketplace.DTOs
+namespace ipz_marketplace.DTOs
 {
     public class BuyerAdDTO
     {

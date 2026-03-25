@@ -15,7 +15,8 @@ namespace ipz_marketplace.Services
             Paid,
             Cancelled,
             Failed,
-            Refunded
+            Refunded,
+            Completed
         }
 
         private readonly MarketplaceDbContext _context;

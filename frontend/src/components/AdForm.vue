@@ -20,6 +20,20 @@ const ScrollArea = "div";
 const props = defineProps(["isOpen"]);
 const emit = defineEmits(["close"]);
 const categoryList = vue.ref([]);
+const photosList = vue.ref([]);
+const photoInput = vue.ref(null);
+
+const handleFileChange = (e) => {
+  const files = Array.from(e.target.files);
+  photosList.value = [...photosList.value, ...files];
+  if(photoInput.value) photoInput.value.value = ""; // reset input
+};
+
+const removePhoto = (index) => {
+  photosList.value.splice(index, 1);
+};
+
+const createUrl = (file) => URL.createObjectURL(file);
 
 const fetchCategories = async () => {
   try {
@@ -65,15 +79,24 @@ const onSubmit = async (values, { setSubmitting }) => {
       Price: tier.price,
     }));
 
+    const formData = new FormData();
+    formData.append("Title", values.title);
+    formData.append("Description", values.description);
+    formData.append("Category", values.categories);
+
+    gigsPayload.forEach((gig, index) => {
+      formData.append(`Gigs[${index}].TierName`, gig.TierName);
+      formData.append(`Gigs[${index}].TierDescription`, gig.TierDescription);
+      formData.append(`Gigs[${index}].Price`, gig.Price);
+    });
+
+    photosList.value.forEach((file) => {
+      formData.append("Photos", file);
+    });
+
     const response = await fetch("/api/sellerad/create", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Title: values.title,
-        Description: values.description,
-        Category: values.categories,
-        Gigs: gigsPayload,
-      }),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -84,6 +107,8 @@ const onSubmit = async (values, { setSubmitting }) => {
 
     const result = await response.text();
     console.log("Success:", result);
+    photosList.value = []; // reset state
+    window.dispatchEvent(new Event("sellerad:created"));
     emit("close");
   } catch (err) {
     console.error("Submission Error:", err);
@@ -138,6 +163,25 @@ const onSubmit = async (values, { setSubmitting }) => {
                   </option>
                 </Field>
                 <ErrorMessage name="categories" class="text-xs text-red-500 font-medium" />
+              </div>
+
+              <div class="grid gap-2">
+                <Label class="text-zinc-700 dark:text-zinc-300">Zdjęcia Portfela (Opcjonalne)</Label>
+                <div class="flex items-center gap-4">
+                  <Button type="button" variant="outline" class="border-dashed h-11 border-zinc-200 dark:border-zinc-800" @click="photoInput.click()">
+                    <Plus class="w-4 h-4 mr-2 text-teal-600" /> Dodaj zdjęcie
+                  </Button>
+                  <input type="file" ref="photoInput" multiple accept="image/*" class="hidden" @change="handleFileChange" />
+                </div>
+                
+                <div v-if="photosList.length > 0" class="flex flex-wrap gap-3 mt-2">
+                  <div v-for="(photo, idx) in photosList" :key="idx" class="relative group w-20 h-20 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center">
+                    <img :src="createUrl(photo)" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" @click="removePhoto(idx)">
+                      <Trash2 class="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -201,7 +245,7 @@ const onSubmit = async (values, { setSubmitting }) => {
                           <Label class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">Krótki opis</Label>
                         <Field
                           :name="`tiers[${index}].description`"
-                          as="input"
+                          as="textarea"
                           class="flex h-10 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
                           placeholder="Zawartość pakietu..."
                         />

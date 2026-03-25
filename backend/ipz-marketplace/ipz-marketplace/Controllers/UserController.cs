@@ -52,13 +52,13 @@ public class UserController : ControllerBase
     [HttpGet("getUser")]
     public async Task<IActionResult> GetUser()
     {
-        var login = await _userManager.GetUserAsync(User);
-        if(login == null)
+        var user = await _userManager.GetUserAsync(User);
+        if(user == null)
         {
             return NotFound("User not found! Double check if you are logged in!!");
         }
-        var role = await _userManager.GetRolesAsync(login);
-        return Ok(new { Login = login.UserName, Role = role });
+        var role = await _userManager.GetRolesAsync(user);
+        return Ok(new { Id = user.Id, Login = user.UserName, Roles = role });
     }
 
 }
